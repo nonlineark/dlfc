@@ -106,7 +106,7 @@
             w_{1} \\
             \vdots \\
             w_{M}
-        \end{pmatrix}$, such that the linear model $y(x,w)=\sum_{j=0}^{M}w_{j}x^{j}$ has the smallest error, as defined by $E(w)=\frac{1}{2}\sum_{n=1}^{N}(y(x_{n},w)-t_{n})^{2}$.
+        \end{pmatrix}$, such that the linear model $y(x;w)=\sum_{j=0}^{M}w_{j}x^{j}$ has the smallest error, as defined by $E(w)=\frac{1}{2}\sum_{n=1}^{N}(y(x_{n};w)-t_{n})^{2}$.
     \end{block}
 \end{frame}
 
@@ -115,7 +115,7 @@
     Differentiate $E(w)$, we see that:
     \begin{equation*}
         \begin{split}
-            DE(w)&=\sum_{n=1}^{N}(y(x_{n},w)-t_{n})X_{n}^{T} \\
+            DE(w)&=\sum_{n=1}^{N}(y(x_{n};w)-t_{n})X_{n}^{T} \\
             &=\sum_{n=1}^{N}w^{T}X_{n}X_{n}^{T}-\sum_{n=1}^{N}t_{n}X_{n}^{T} \\
             &=w^{T}XX^{T}-t^{T}X^{T}
         \end{split}
@@ -148,7 +148,7 @@
         \item \emph{Regularization}: Add a penalty term to the error function to discourage the coefficients from having large magnitudes.
     \end{itemize}
     \begin{equation*}
-        \tilde{E}(w)=\frac{1}{2}\sum_{n=1}^{N}(y(x_{n},w)-t_{n})^{2}+\frac{\lambda}{2}||w||^{2}
+        \tilde{E}(w)=\frac{1}{2}\sum_{n=1}^{N}(y(x_{n};w)-t_{n})^{2}+\frac{\lambda}{2}||w||^{2}
     \end{equation*}
 \end{frame}
 
