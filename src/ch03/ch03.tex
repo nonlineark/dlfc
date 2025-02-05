@@ -1,0 +1,89 @@
+\documentclass{beamer}
+
+\usepackage{amsmath}
+
+\usetheme{AnnArbor}
+\usecolortheme{crane}
+\usefonttheme[onlymath]{serif}
+
+\title{Deep Learning - Foundations and Concepts}
+\subtitle{Chapter 3. Standard Distributions}
+\author{nonlineark@github}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Discrete Variables}
+
+\begin{frame}
+    \frametitle{Bernoulli distribution}
+    \begin{itemize}
+        \item Consider a binary random variable $x\in\{0,1\}$ and a parameter $0\le\mu\le{}1$, such that $p(x=1)=\mu$ and $p(x=0)=1-\mu$.
+        \item Probability distribution: $\mathrm{Bern}(x;\mu)=\mu^{x}(1-\mu)^{1-x}$.
+        \item Expectation: $E(x)=\mu$.
+        \item Variance: $\mathrm{var}(x)=\mu(1-\mu)$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Bernoulli distribution}
+    Model the Bernoulli distribution given observations $\{x_{1},\hdots,x_{N}\}$.
+    \begin{align*}
+        p(x_{1},\hdots,x_{N};\mu)&=\prod_{n=1}^{N}\mu^{x_{n}}(1-\mu)^{1-x_{n}} \\
+        \log{}p(x_{1},\hdots,x_{N};\mu)&=\sum_{n=1}^{N}(x_{n}\log\mu+(1-x_{n})\log(1-\mu)) \\
+        &=\log\mu\sum_{n=1}^{N}x_{n}+\log(1-\mu)(N-\sum_{n=1}^{N}x_{n}) \\
+        \mu_{ML}&=\frac{1}{N}\sum_{n=1}^{N}x_{n}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Binomial distribution}
+    \begin{itemize}
+        \item Consider a random variable $m=\sum_{n=1}^{N}x_{n}$, where $x_{n}$ are independent random variables obey Bernoulli distribution with parameter $\mu$.
+        \item Probability distribution: $\mathrm{Bin}(m;N,\mu)={N\choose{}m}\mu^{m}(1-\mu)^{N-m}$.
+        \item Expectation: $E(m)=N\mu$.
+        \item Variance: $\mathrm{var}(m)=N\mu(1-\mu)$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Multinomial distribution}
+    \begin{itemize}
+        \item Consider a random variable $x\in\{\mathrm{e}_{1},\hdots,\mathrm{e}_{K}\}$ and a parameter $\mu\in\mathbb{R}^{K}$, such that $p(x=\mathrm{e}_{k})=\mu_{k}$.
+        \item Probability distribution: $p(x;\mu)=\prod_{k=1}^{K}\mu_{k}^{x_{k}}$.
+        \item Expectation: $E(x)=\mu$.
+        \item Covariance: $\mathrm{cov}(x)=\mathrm{diag}(\mu_{1}(1-\mu_{1}),\hdots,\mu_{K}(1-\mu_{K}))$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Multinomial distribution}
+    Model the generalized Bernoulli distribution given observations $x^{1},\hdots,x^{N}$.
+    \begin{align*}
+        p(x^{1},\hdots,x^{N};\mu)&=\prod_{n=1}^{N}\prod_{k=1}^{K}\mu_{k}^{x^{n}_{k}} \\
+        \log{}p(x^{1},\hdots,x^{N};\mu)&=\sum_{n=1}^{N}\sum_{k=1}^{K}x^{n}_{k}\log\mu_{k}=\sum_{k=1}^{K}(\sum_{n=1}^{N}x^{n}_{k})\log\mu_{k} \\
+        \mu_{ML}&=\frac{1}{N}\sum_{n=1}^{N}x^{n}
+    \end{align*}
+    For the last step, we used Lagrange multiplier to take into the constraint $\sum_{k=1}^{K}\mu_{k}=1$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Multinomial distribution}
+    \begin{itemize}
+        \item Consider a random variable $m=\sum_{n=1}^{N}x^{n}$, where $x^{n}$ are independent random variables obey the generalized Bernoulli distribution with parameter $\mu$.
+        \item Probability distribution: $\mathrm{Mult}(m;N,\mu)=\frac{N!}{\prod_{k=1}^{K}m_{k}!}\prod_{k=1}^{K}\mu_{k}^{m_{k}}$.
+        \item Expectation: $E(m)=N\mu$.
+        \item Covariance: $\mathrm{cov}(m)=N(\mathrm{diag}(\mu_{1},\hdots,\mu_{K})-\mu\mu^{T})$.
+    \end{itemize}
+\end{frame}
+
+\end{document}
