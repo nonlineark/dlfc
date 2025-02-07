@@ -206,7 +206,7 @@
     \frametitle{Conditional distribution and marginal distribution}
     Second step, let's complete the square! Notice:
     \begin{equation*}
-        (x-\mu)^{T}\Sigma^{-1}(x-\mu)=x\Sigma^{-1}x-2x^{T}\Sigma^{-1}\mu+\mathrm{const}
+        (x-\mu)^{T}\Sigma^{-1}(x-\mu)=x\Sigma^{-1}x-2x^{T}\Sigma^{-1}\mu+\mu^{T}\Sigma^{-1}\mu
     \end{equation*}
     For conditional distribution $p(x_{a}|x_{b})$:
     \begin{align*}
@@ -225,10 +225,10 @@
     \end{align*}
     Compare, we see:
     \begin{align*}
-        \Sigma_{a|b}^{-1}&=\Lambda_{aa} \\
-        \Sigma_{a|b}&=\Lambda_{aa}^{-1} \\
-        \Sigma_{a|b}^{-1}\mu_{a|b}&=\Lambda_{aa}\mu_{a}-\Lambda_{ab}(x_{b}-\mu_{b}) \\
-        \mu_{a|b}&=\mu_{a}-\Lambda_{aa}^{-1}\Lambda_{ab}(x_{b}-\mu_{b})
+        \Sigma_{x_{a}|x_{b}}^{-1}&=\Lambda_{aa} \\
+        \Sigma_{x_{a}|x_{b}}&=\Lambda_{aa}^{-1} \\
+        \Sigma_{x_{a}|x_{b}}^{-1}\mu_{x_{a}|x_{b}}&=\Lambda_{aa}\mu_{a}-\Lambda_{ab}(x_{b}-\mu_{b}) \\
+        \mu_{x_{a}|x_{b}}&=\mu_{a}-\Lambda_{aa}^{-1}\Lambda_{ab}(x_{b}-\mu_{b})
     \end{align*}
 \end{frame}
 
@@ -247,8 +247,28 @@
             x_{a}-\mu_{a} \\
             x_{b}-\mu_{b}
         \end{pmatrix} \\
-        &=x_{b}^{T}\Lambda_{bb}x_{b}-2x_{b}^{T}(\Lambda_{bb}\mu_{b}-\Lambda_{ba}(x_{a}-\mu_{a}))+\cdots
+        &=x_{b}^{T}\Lambda_{bb}x_{b}-2x_{b}^{T}\Lambda_{bb}(\mu_{b}-\Lambda_{bb}^{-1}\Lambda_{ba}(x_{a}-\mu_{a}))+\cdots \\
+        &=x_{b}^{T}\Lambda_{bb}x_{b}-2x_{b}^{T}\Lambda_{bb}m+m^{T}\Lambda_{bb}m+\cdots \\
+        &=(x_{b}-m)^{T}\Lambda_{bb}(x_{b}-m)+\cdots
     \end{align*}
+    where $m=\mu_{b}-\Lambda_{bb}^{-1}\Lambda_{ba}(x_{a}-\mu_{a})$. We see that when integrating $x_{b}$, the result will be a constant not depending on $x_{a}$, although $m$ depends on $x_{a}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conditional distribution and marginal distribution}
+    Which means, we can take a look at the terms left in $\cdots$, and complete the square for $x_{a}$ to get the mean and the covariance for $x_{a}$:
+    \begin{equation*}
+        \cdots=(x_{a}-\mu_{a})^{T}(\Lambda_{aa}-\Lambda_{ab}\Lambda_{bb}^{-1}\Lambda_{ba})(x_{a}-\mu_{a})
+    \end{equation*}
+    We see that:
+    \begin{align*}
+        \Sigma_{x_{a}}&=(\Lambda_{aa}-\Lambda_{ab}\Lambda_{bb}^{-1}\Lambda_{ba})^{-1} \\
+        \mu_{x_{a}}&=\mu_{a}
+    \end{align*}
+    Through a rather ugly equation (known as Schur complement), we can simplify the expression for $\Sigma_{x_{a}}$ to a much nicer one:
+    \begin{equation*}
+        \Sigma_{x_{a}}=\Sigma_{aa}
+    \end{equation*}
 \end{frame}
 
 \end{document}
