@@ -50,7 +50,7 @@
     \frametitle{Binomial distribution}
     \begin{itemize}
         \item Consider a random variable $m=\sum_{n=1}^{N}x_{n}$, where $x_{n}$ are independent random variables obey Bernoulli distribution with parameter $\mu$.
-        \item Probability distribution: $\mathrm{Bin}(m;N,\mu)={N\choose{}m}\mu^{m}(1-\mu)^{N-m}$.
+        \item Probability distribution: $\mathrm{Bin}(m;N,\mu)=\binom{N}{m}\mu^{m}(1-\mu)^{N-m}$.
         \item Expectation: $E(m)=N\mu$.
         \item Variance: $\mathrm{var}(m)=N\mu(1-\mu)$.
     \end{itemize}
@@ -602,6 +602,76 @@
         &\frac{Dg(\eta)}{g(\eta)}+E(u(x)^{T})=0 \\
         &E(u(x))=-(D\log(g(\eta)))^{T}
     \end{align*}
+\end{frame}
+
+\section{Nonparametric Methods}
+
+\begin{frame}
+    \frametitle{Histograms}
+    \begin{itemize}
+        \item Partition $x$ into distinct bins of width $\Delta_{i}$.
+        \item Count the number $n_{i}$ of observations of $x$ falling in bin $i$.
+        \item $p_{i}=\frac{n_{i}}{N\Delta_{i}}$.
+        \item $\Delta_{i}$ plays the role of a smoothing parameter, best results are obtained for some intermediate value of $\Delta_{i}$.
+        \item Curse of dimensionality.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Kernel densities}
+    To estimate the probability density of $p(x)$:
+    \begin{itemize}
+        \item Consider some small region $\mathcal{R}$ that contains $x$.
+        \item Suppose we have collected a data set comprising of $N$ observations, and there are $K$ points that lie inside $\mathcal{R}$.
+        \item And the region $\mathcal{R}$ has volume $V$.
+    \end{itemize}
+    Then we obtain our density estimate in the form:
+    \begin{equation*}
+        p(x)=\frac{K}{NV}
+    \end{equation*}
+    We can exploit this result in two different ways:
+    \begin{itemize}
+        \item Fix $V$ and determine $K$ from the data: The kernel approach.
+        \item Fix $K$ and determine $V$ from the data: The $K$-nearest-neighbor technique.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Kernel densities}
+    Parzen window:
+    \begin{align*}
+        k(u)&=
+        \begin{cases}
+            1,&|u_{i}|\le\frac{1}{2},1\le{}i\le{}D \\
+            0,&\mathrm{otherwise}
+        \end{cases} \\
+        p(x)&=\frac{1}{N}\sum_{n=1}^{N}\frac{1}{h^{D}}k(\frac{x-x_{n}}{h})
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Kernel densities}
+    We can choose any other kernal function $k(u)$ subject to the conditions:
+    \begin{align*}
+        k(u)&\ge{}0 \\
+        \int{}k(u)\mathrm{d}u&=1
+    \end{align*}
+    For example, we could choose the Gaussian:
+    \begin{equation*}
+        p(x)=\frac{1}{N}\sum_{n=1}^{N}\frac{1}{(2\pi{}h^{2})^{\frac{D}{2}}}\exp(-\frac{||x-x_{n}||^{2}}{2h^{2}})
+    \end{equation*}
+    where $h$ plays the role of a smoothing parameter.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Nearest-neighbors}
+    To estimate the probability density of $p(x)$:
+    \begin{itemize}
+        \item Consider a small sphere centered on the point $x$.
+        \item Allow the radius of the sphere to grow until it contains precisely $K$ data points.
+        \item $K$ plays the role of a smoothing parameter.
+    \end{itemize}
+    The $K$-nearest-neighbor technique can be extended to the problem of classification.
 \end{frame}
 
 \end{document}
