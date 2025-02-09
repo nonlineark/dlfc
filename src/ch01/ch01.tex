@@ -117,7 +117,7 @@
         \begin{split}
             DE(w)&=\sum_{n=1}^{N}(y(x_{n};w)-t_{n})X_{n}^{T} \\
             &=\sum_{n=1}^{N}w^{T}X_{n}X_{n}^{T}-\sum_{n=1}^{N}t_{n}X_{n}^{T} \\
-            &=w^{T}XX^{T}-t^{T}X^{T}
+            &=w^{T}X^{T}X-t^{T}X
         \end{split}
     \end{equation*}
     where $X_{n}=\begin{pmatrix}
@@ -126,10 +126,13 @@
         \vdots \\
         x_{n}^{M}
     \end{pmatrix}$, and $X=\begin{pmatrix}
-        X_{1},X_{2},\hdots,X_{N}
+        X_{1}^{T} \\
+        X_{2}^{T} \\
+        \vdots \\
+        X_{N}^{T}
     \end{pmatrix}$.
     
-    Let $DE(w^{*})=0$, we have $w^{*}=(XX^{T})^{-1}Xt$.
+    Let $DE(w^{*})=0$, we have $w^{*}=(X^{T}X)^{-1}X^{T}t$.
 \end{frame}
 
 \begin{frame}

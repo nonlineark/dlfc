@@ -190,7 +190,7 @@
         Assume that given the value of $x_{n}$, the corresponding value of $t_{n}$ has a Gaussian distribution with a mean equal to the value $y(x_{n};w)$ and a variance $\sigma^{2}$ (where the parameters $w$ and $\sigma^{2}$ are to be determined). Maximize the
         likelihood function:
         \begin{equation*}
-            p(t,x;w,\sigma^{2})=\prod_{n=1}^{N}\mathcal{N}(t_{n};y(x_{n};w),\sigma^{2})
+            p(t|x;w,\sigma^{2})=\prod_{n=1}^{N}\mathcal{N}(t_{n};y(x_{n};w),\sigma^{2})
         \end{equation*}
     \end{block}
 \end{frame}
@@ -199,7 +199,7 @@
     \frametitle{Linear regression from a maximum likelihood perspective}
     Again, we minimize the negative log function:
     \begin{align*}
-        L&=-\log{}p(t,x;w,\sigma^{2}) \\
+        L&=-\log{}p(t|x;w,\sigma^{2}) \\
         &=\frac{1}{2\sigma^{2}}\sum_{n=1}^{N}(y(x_{n};w)-t_{n})^{2}+\frac{N}{2}\log\sigma^{2}+\frac{N}{2}\log(2\pi)
     \end{align*}
     We see that maximizing the likelihood function for $w$ is equivalent to minimizing the error function defined by:
@@ -212,7 +212,7 @@
     \frametitle{Linear regression from a maximum likelihood perspective}
     What has us gained from looking at the linear regression problem from a maximum likelihood perspective? Instead of a point estimate, we now have a predictive distribution:
     \begin{equation*}
-        p(\hat{t},\hat{x};w_{ML},\sigma^{2}_{ML})=\mathcal{N}(\hat{t};y(\hat{x};w_{ML}),\sigma^{2}_{ML})
+        p(\hat{t}|\hat{x};w_{ML},\sigma^{2}_{ML})=\mathcal{N}(\hat{t};y(\hat{x};w_{ML}),\sigma^{2}_{ML})
     \end{equation*}
     where
     \begin{align*}
