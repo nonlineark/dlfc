@@ -76,16 +76,9 @@
     where:
     \begin{equation*}
         \Phi=\begin{pmatrix}
-            \phi_{1}^{T} \\
-            \phi_{2}^{T} \\
-            \vdots \\
-            \phi_{N}^{T}
-        \end{pmatrix}
+            \phi_{1}&\phi_{2}&\hdots&\phi_{N}
+        \end{pmatrix}^{T}
     \end{equation*}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Maximum likelihood}
     We see that:
     \begin{equation*}
         w_{ML}=(\Phi^{T}\Phi)^{-1}\Phi^{T}t
@@ -192,6 +185,73 @@
         &=\frac{1}{\sigma^{2}}\mathrm{tr}((W^{T}\Phi^{T}\Phi-T^{T}\Phi)H) \\
         W_{ML}&=(\Phi^{T}\Phi)^{-1}\Phi^{T}T
     \end{align*}
+\end{frame}
+
+\section{Decision Theory}
+
+\begin{frame}
+    \frametitle{Decision theory}
+    \begin{itemize}
+        \item We have learned from data using maximum likelihood, and the result is a predictive distribution.
+        \item However, for many practical applications we need to predict a specific value.
+        \item In the inference stage, we use the training data to determine a predictive distribution.
+        \item In the decision stage, we use this predictive distribution to determine a specific value.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decision theory}
+    \begin{block}{Problem}
+        Given a predictive distribution $p(t|x)$, determine a specific value $f(x)$, which will be dependent on the input $x$, that is optimal according to some criterion.
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decision theory}
+    Because we do not know the true value of $t$, we cannot minimize the loss $L=(f(x)-t)^{2}$ itself, instead let's minimize the expected loss:
+    \begin{equation*}
+        E(L)=\iint(f(x)-t)^{2}p(x,t)\mathrm{d}x\mathrm{d}t
+    \end{equation*}
+    We want to find $f(x)$ that minimizes $E(L)$:
+    \begin{align*}
+        \frac{\delta{}E(L)}{\delta{}f(x)}&=2\int(f(x)-t)p(x,t)\mathrm{d}t=0 \\
+        f(x)&=\frac{\int{}tp(x,t)\mathrm{d}t}{\int{}p(x,t)\mathrm{d}t}=\frac{\int{}tp(x,t)\mathrm{d}t}{p(x)}=\int{}tp(t|x)\mathrm{d}t=E(t|x)
+    \end{align*}
+    which is the conditional average of $t$ conditioned on $x$ and is known as the regression function.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decision theory}
+    Now that we know that the optimal solution is the conditional expectation, we can expand the square term as follows:
+    \begin{align*}
+        &(f(x)-t)^{2}=((f(x)-E(t|x))+(E(t|x)-t))^{2} \\
+        &=(f(x)-E(t|x))^{2}+2(f(x)-E(t|x))(E(t|x)-t)+(E(t|x)-t)^{2}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decision theory}
+    Let's examine the expectation for each term:
+    \begin{align*}
+        &\iint(f(x)-E(t|x))^{2}p(x,t)\mathrm{d}x\mathrm{d}t=\int(f(x)-E(t|x))^{2}(\int{}p(x,t)\mathrm{d}t)\mathrm{d}x \\
+        &=\int(f(x)-E(t|x))^{2}p(x)\mathrm{d}x \\
+        &\iint(f(x)-E(t|x))(E(t|x)-t)p(x,t)\mathrm{d}x\mathrm{d}t \\
+        &=\int(f(x)-E(t|x))p(x)(\int(E(t|x)-t)p(t|x)\mathrm{d}t)\mathrm{d}x=0 \\
+        &\iint(E(t|x)-t)^{2}p(x,t)\mathrm{d}x\mathrm{d}t=\int{}p(x)(\int(t-E(t|x))^{2}p(t|x)\mathrm{d}t)\mathrm{d}x \\
+        &=\int\mathrm{var}(t|x)p(x)\mathrm{d}x
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decision theory}
+    Let's interpret what we have derived here:
+    \begin{equation*}
+        E(L)=\int(f(x)-E(t|x))^{2}p(x)\mathrm{d}x+\int\mathrm{var}(t|x)p(x)\mathrm{d}x
+    \end{equation*}
+    \begin{itemize}
+        \item The first term shows that the optimal least-squares predictor is given by the conditional expectation.
+        \item The second term is the variance of $t$ averaged over $x$, and represents the intrinsic variability of the target data.
+    \end{itemize}
 \end{frame}
 
 \end{document}
