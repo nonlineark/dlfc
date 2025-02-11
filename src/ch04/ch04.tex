@@ -254,4 +254,69 @@
     \end{itemize}
 \end{frame}
 
+\section{The Bias-Variance Trade-off}
+
+\begin{frame}
+    \frametitle{The bias-variance trade-off}
+    For a regression problem:
+    \begin{itemize}
+        \item Given a data set $\mathcal{D}$, we can run our learning algorithm and obtain a prediction function $f(x;\mathcal{D})$.
+        \begin{itemize}
+            \item Note that this prediction function contains both the inference and decision stages.
+        \end{itemize}
+        \item We could view the uncertainty of our model in two ways:
+        \begin{itemize}
+            \item Bayesian: The uncertainty is expressed through a poterior distribution over the parameters.
+            \item Frequentist: The uncertainty comes from the data set $\mathcal{D}$. If we are given an ensemble of data sets, we can average out the uncertainty.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The bias-variance trade-off}
+    From previous analysis we know that the expected squared loss can be written in the form:
+    \begin{equation*}
+        E(L)=\int(f(x)-E(t|x))^{2}p(x)\mathrm{d}x+\int\mathrm{var}(t|x)p(x)\mathrm{d}x
+    \end{equation*}
+    To better understand the first term, let's consider its expectation over an ensemble of data sets. If we denote the average prediction function over the ensemble of data sets as $\bar{f}(x)=E_{\mathcal{D}}(f(x;\mathcal{D}))$, then:
+    \begin{align*}
+        &E_{\mathcal{D}}((f(x;\mathcal{D})-E(t|x))^{2}) \\
+        &=E_{\mathcal{D}}(((f(x;\mathcal{D})-\bar{f}(x))+(\bar{f}(x)-E(t|x)))^{2}) \\
+        &=E_{\mathcal{D}}((f(x;\mathcal{D})-\bar{f}(x))^{2})+E_{\mathcal{D}}((\bar{f}(x)-E(t|x))^{2}) \\
+        &=\mathrm{var}_{\mathcal{D}}(f(x;\mathcal{D}))+(\bar{f}(x)-E(t|x))^{2}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The bias-variance trade-off}
+    Let's examine the terms:
+    \begin{itemize}
+        \item $(\bar{f}(x)-E(t|x))^{2}$: The squared bias, represents the extent to which the average prediction over all data sets differs from the desired regression function.
+        \item $\mathrm{var}_{\mathcal{D}}(f(x;\mathcal{D}))$: The variance, measures the extent to which the solutions for individual data sets vary around their average.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The bias-variance trade-off}
+    We obtain the following decomposition of the expected squared loss:
+    \begin{equation*}
+        \textrm{expected loss}=(\textrm{bias})^{2}+\textrm{variance}+\textrm{noise}
+    \end{equation*}
+    where:
+    \begin{align*}
+        \mathrm{bias}^{2}&=\int(\bar{f}(x)-E(t|x))^{2}p(x)\mathrm{d}x \\
+        \mathrm{variance}&=\int\mathrm{var}_{\mathcal{D}}(f(x;\mathcal{D}))p(x)\mathrm{d}x \\
+        \mathrm{noise}&=\int\mathrm{var}(t|x)p(x)\mathrm{d}x
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The bias-variance trade-off}
+    To minimize the expected loss, there will be a trade-off between bias and variance:
+    \begin{itemize}
+        \item Very flexible models have low bias and high variance.
+        \item Relatively rigid models have high bias and low variance.
+    \end{itemize}
+\end{frame}
+
 \end{document}
