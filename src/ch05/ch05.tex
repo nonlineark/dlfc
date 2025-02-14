@@ -323,4 +323,178 @@
     \end{itemize}
 \end{frame}
 
+\section{Generative Classifiers}
+
+\begin{frame}
+    \frametitle{Activation functions}
+    In linear regression, the model prediction is given by:
+    \begin{equation*}
+        y(x;w)=w^{T}x+w_{0}
+    \end{equation*}
+    which gives a continuous-valued output in the range $(-\infty,+\infty)$. For classification problems, we wish to predict posterior probabilities in the range $(0,1)$, which could be achieved using an activation function:
+    \begin{equation*}
+        y(x;w)=f(w^{T}x+w_{0})
+    \end{equation*}
+    We see that the decision surfaces are linear functions of $x$. For this reason, these models are called generalized linear models.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Activation functions}
+    For two classes, we can use the logistic sigmoid function $\sigma(a)=\frac{1}{1+\exp(-a)}$ as the activation function:
+    \begin{equation*}
+        p(\mathcal{C}_{1}|x)=\sigma(a(x))=\frac{1}{1+\exp(-a(x))}
+    \end{equation*}
+    Compare with:
+    \begin{align*}
+        p(\mathcal{C}_{1}|x)&=\frac{p(x|\mathcal{C}_{1})p(\mathcal{C}_{1})}{p(x|\mathcal{C}_{1})p(\mathcal{C}_{1})+p(x|\mathcal{C}_{2})p(\mathcal{C}_{2})} \\
+        &=\frac{1}{1+\frac{p(x|\mathcal{C}_{2})p(\mathcal{C}_{2})}{p(x|\mathcal{C}_{1})p(\mathcal{C}_{1})}}
+    \end{align*}
+    We see that:
+    \begin{equation*}
+        a(x)=\log\frac{p(x|\mathcal{C}_{1})p(\mathcal{C}_{1})}{p(x|\mathcal{C}_{2})p(\mathcal{C}_{2})}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Activation functions}
+    The softmax function is defined by:
+    \begin{equation*}
+        \mathrm{softmax}(a)=\frac{1}{\sum_{k=1}^{K}\exp(a_{k})}\begin{pmatrix}
+            \exp(a_{1}) \\
+            \vdots \\
+            \exp(a_{K})
+        \end{pmatrix}
+    \end{equation*}
+    For multiple classes, we can use the softmax function as the activation function:
+    \begin{equation*}
+        \begin{pmatrix}
+            p(\mathcal{C}_{1}|x) \\
+            \vdots \\
+            p(\mathcal{C}_{K}|x)
+        \end{pmatrix}
+        =\mathrm{softmax}(a_{1}(x),\hdots,a_{K}(x))
+    \end{equation*}
+    Compare with:
+    \begin{equation*}
+        p(\mathcal{C}_{k}|x)=\frac{p(x|\mathcal{C}_{k})p(\mathcal{C}_{k})}{\sum_{j}p(x|\mathcal{C}_{j})p(\mathcal{C}_{j})}
+    \end{equation*}
+    We see that:
+    \begin{equation*}
+        a_{k}(x)=\log(p(x|\mathcal{C}_{k})p(\mathcal{C}_{k}))
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Continuous inputs}
+    Let's assume that the class-conditional densities are Guassian. To start with, we will assume that all classes share the same covariance matrix $\Sigma$:
+    \begin{equation*}
+        p(x|\mathcal{C}_{k})=\frac{1}{(2\pi)^{\frac{D}{2}}(\det\Sigma)^{\frac{1}{2}}}\exp(-\frac{1}{2}(x-\mu_{k})^{T}\Sigma^{-1}(x-\mu_{k}))
+    \end{equation*}
+    We will see that this lead to generalized linear models.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Continuous inputs}
+    For two classes:
+    \begin{equation*}
+        p(\mathcal{C}_{1}|x)=\sigma(a(x))
+    \end{equation*}
+    where:
+    \begin{align*}
+        a(x)&=w^{T}x+w_{0} \\
+        w&=\Sigma^{-1}(\mu_{1}-\mu_{2}) \\
+        w_{0}&=-\frac{1}{2}\mu_{1}^{T}\Sigma^{-1}\mu_{1}+\frac{1}{2}\mu_{2}^{T}\Sigma^{-1}\mu_{2}+\log\frac{p(\mathcal{C}_{1})}{p(\mathcal{C}_{2})}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Continuous inputs}
+    For multiple classes:
+    \begin{equation*}
+        \begin{pmatrix}
+            p(\mathcal{C}_{1}|x) \\
+            \vdots \\
+            p(\mathcal{C}_{K}|x)
+        \end{pmatrix}
+        =\mathrm{softmax}(a_{1}(x),\hdots,a_{K}(x))
+    \end{equation*}
+    where:
+    \begin{align*}
+        a_{k}(x)&=w_{k}^{T}x+w_{k0} \\
+        w_{k}&=\Sigma^{-1}\mu_{k} \\
+        w_{k0}&=-\frac{1}{2}\mu_{k}^{T}\Sigma^{-1}\mu_{k}+\log{}p(\mathcal{C}_{k})
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum likelihood solution}
+    \begin{itemize}
+        \item There are $N$ input data: $x^{1},\hdots,x^{N}$, where $x^{n}\in\mathbb{R}^{D}$.
+        \item There are $N$ target data: $t^{1},\hdots,t^{N}$ using a $1$-of-$K$ binary coding scheme, thus $t^{n}\in\mathbb{R}^{K}$.
+        \item The total number of data points in class $\mathcal{C}_{k}$ is denoted by $N_{k}$.
+        \item Prior class probabilities are denoted by $\pi_{k}=p(\mathcal{C}_{k})$.
+        \item Class-conditional densities are Gaussian: $p(x|\mathcal{C}_{k})=\mathcal{N}(x;\mu_{k},\Sigma)$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum likelihood solution}
+    \begin{align*}
+        p(t^{n}|x^{n})&=\prod_{k=1}^{K}p(\mathcal{C}_{k}|x^{n})^{t^{n}_{k}}=\prod_{k=1}^{K}(\frac{p(x^{n}|\mathcal{C}_{k})\pi_{k}}{p(x^{n})})^{t^{n}_{k}} \\
+        &=\frac{1}{p(x^{n})}\prod_{k=1}^{K}\pi_{k}^{t^{n}_{k}}\prod_{k=1}^{K}\mathcal{N}(x^{n};\mu_{k},\Sigma)^{t^{n}_{k}} \\
+        -\log{}p(t^{n}|x^{n})&=-\sum_{k=1}^{K}t^{n}_{k}\log\pi_{k} \\
+        &+\frac{1}{2}\log\det\Sigma+\frac{1}{2}\sum_{k=1}^{K}t^{n}_{k}(x^{n}-\mu_{k})^{T}\Sigma^{-1}(x^{n}-\mu_{k}) \\
+        &+\log{}p(x^{n})+\frac{D}{2}\log{}2\pi
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum likelihood solution}
+    \begin{align*}
+        L&=-\log{}p(t^{1},\hdots,t^{N}|x^{1},\hdots,x^{N})=-\sum_{n=1}^{N}\log{}p(t^{n}|x^{n}) \\
+        &=-\sum_{k=1}^{K}N_{k}\log\pi_{k} \\
+        &+\frac{N}{2}\log\det\Sigma+\frac{1}{2}\sum_{k=1}^{K}\sum_{n=1}^{N}t^{n}_{k}(x^{n}-\mu_{k})^{T}\Sigma^{-1}(x^{n}-\mu_{k}) \\
+        &+\sum_{n=1}^{N}\log{}p(x^{n})+\frac{ND}{2}\log{}2\pi
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum likelihood solution}
+    \begin{align*}
+        \frac{\partial{}L}{\partial\pi_{k}}&=\frac{N_{K}}{\pi_{K}}-\frac{N_{k}}{\pi_{k}}\qquad\pi_{k}=\frac{N_{k}}{N} \\
+        \frac{\partial{}L}{\partial\mu_{k}}&=(N_{k}\mu_{k}-\sum_{x^{n}\in\mathcal{C}^{k}}x^{n})^{T}\Sigma^{-1}\qquad\mu_{k}=\frac{1}{N_{k}}\sum_{x^{n}\in\mathcal{C}_{k}}x^{n} \\
+        \frac{\partial{}L}{\partial\Lambda}(\Lambda)H&=\frac{1}{2}\mathrm{tr}((\sum_{k=1}^{K}\sum_{x^{n}\in\mathcal{C}_{k}}(x^{n}-\mu_{k})(x^{n}-\mu_{k})^{T}-N\Sigma)H) \\
+        \Sigma&=\sum_{k=1}^{K}\frac{N_{k}}{N}S_{k}\qquad{}S_{k}=\frac{1}{N_{k}}\sum_{x^{n}\in\mathcal{C}_{k}}(x^{n}-\mu_{k})(x^{n}-\mu_{k})^{T}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Discrete features}
+    Suppose $x\in\mathbb{R}^{D}$ is a feature vector, where each feature $x_{d}\in\{0,1\}$. And further suppose that the different features are independent when conditioned on the class $\mathcal{C}_{k}$. So we have:
+    \begin{equation*}
+        p(x|\mathcal{C}_{k})=\prod_{d=1}^{D}p(x_{d}|\mathcal{C}_{k})=\prod_{d=1}^{D}\mu_{dk}^{x_{d}}(1-\mu_{dk})^{1-x_{d}}
+    \end{equation*}
+    Using a softmax activation function, we see that:
+    \begin{equation*}
+        a_{k}(x)=\sum_{d=1}^{D}(x_{d}\log\mu_{dk}+(1-x_{d})\log(1-\mu_{dk}))+\log{}p(\mathcal{C}_{k})
+    \end{equation*}
+    which again are linear functions of the input values $x$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Exponential family}
+    If the class-conditional densities $p(x|\mathcal{C}_{k})$ are members of the subset of the exponential family of distributions given by:
+    \begin{equation*}
+        p(x|\mathcal{C}_{k};\lambda_{k},s)=\frac{1}{s}h(\frac{1}{s}x)g(\lambda_{k})\exp(\frac{1}{s}\lambda_{k}^{T}x)
+    \end{equation*}
+    the resulting model will be a generalized linear model. For two classes using the logistic sigmoid activation function:
+    \begin{equation*}
+        a(x)=\frac{1}{s}(\lambda_{1}-\lambda_{2})^{T}x+\log\frac{g(\lambda_{1})}{g(\lambda_{2})}+\log\frac{p(\mathcal{C}_{1})}{p(\mathcal{C}_{2})}
+    \end{equation*}
+    For multiple classes using the softmax activation function:
+    \begin{equation*}
+        a_{k}(x)=\frac{1}{s}\lambda_{k}^{T}x+\log{}g(\lambda_{k})+\log{}p(\mathcal{C}_{k})
+    \end{equation*}
+\end{frame}
+
 \end{document}
