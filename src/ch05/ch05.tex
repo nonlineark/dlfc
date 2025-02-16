@@ -462,7 +462,7 @@
     \frametitle{Maximum likelihood solution}
     \begin{align*}
         \frac{\partial{}L}{\partial\pi_{k}}&=\frac{N_{K}}{\pi_{K}}-\frac{N_{k}}{\pi_{k}}\qquad\pi_{k}=\frac{N_{k}}{N} \\
-        \frac{\partial{}L}{\partial\mu_{k}}&=(N_{k}\mu_{k}-\sum_{x^{n}\in\mathcal{C}^{k}}x^{n})^{T}\Sigma^{-1}\qquad\mu_{k}=\frac{1}{N_{k}}\sum_{x^{n}\in\mathcal{C}_{k}}x^{n} \\
+        \frac{\partial{}L}{\partial\mu_{k}}&=(N_{k}\mu_{k}-\sum_{x^{n}\in\mathcal{C}_{k}}x^{n})^{T}\Sigma^{-1}\qquad\mu_{k}=\frac{1}{N_{k}}\sum_{x^{n}\in\mathcal{C}_{k}}x^{n} \\
         \frac{\partial{}L}{\partial\Lambda}(\Lambda)H&=\frac{1}{2}\mathrm{tr}((\sum_{k=1}^{K}\sum_{x^{n}\in\mathcal{C}_{k}}(x^{n}-\mu_{k})(x^{n}-\mu_{k})^{T}-N\Sigma)H) \\
         \Sigma&=\sum_{k=1}^{K}\frac{N_{k}}{N}S_{k}\qquad{}S_{k}=\frac{1}{N_{k}}\sum_{x^{n}\in\mathcal{C}_{k}}(x^{n}-\mu_{k})(x^{n}-\mu_{k})^{T}
     \end{align*}
@@ -494,6 +494,170 @@
     For multiple classes using the softmax activation function:
     \begin{equation*}
         a_{k}(x)=\frac{1}{s}\lambda_{k}^{T}x+\log{}g(\lambda_{k})+\log{}p(\mathcal{C}_{k})
+    \end{equation*}
+\end{frame}
+
+\section{Discriminative Classifiers}
+
+\begin{frame}
+    \frametitle{Discriminative classifiers}
+    \begin{itemize}
+        \item For generative models, we have seen that the posterior probability $p(\mathcal{C}_{k}|x)$ can be written as a logistic sigmoid or softmax acting on a linear function of $x$, for a wide choice of class-conditional distributions $p(x|\mathcal{C}_{k})$ from the exponential family.
+        \item An alternative approach is to maximize a likelihood function defined through the conditional distribution $p(\mathcal{C}_{k}|x)$ directly.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Fixed basis functions}
+    Similar to linear regression, we can introduce a vector of nonlinear basis functions $\phi: \mathbb{R}^{D}\to\mathbb{R}^{M}$, so that each $x\in\mathbb{R}^{D}$ in the input space is transformed to a $\phi(x)\in\mathbb{R}^{M}$ in the feature space:
+    \begin{itemize}
+        \item Classes that are not linearly separable in the input space may be linearly separable in the feature space.
+        \item One of the basis functions is typically set to a constant, say $\phi_{0}(x)=1$, to accommodate the bias.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Logistic regression}
+    For two-class classification, we model the posterior probability of class $\mathcal{C}_{1}$ as:
+    \begin{equation*}
+        p(\mathcal{C}_{1}|\phi)=y(\phi)=\sigma(a(\phi))=\sigma(w^{T}\phi)
+    \end{equation*}
+    with $p(\mathcal{C}_{2}|\phi)=1-p(\mathcal{C}_{1}|\phi)$. We see that this logistic regression model has far less parameters than the corresponding generative model:
+    \begin{itemize}
+        \item For an $M$-dimensional feature space, this logistic regression model has $M$ parameters.
+        \item For comparison, if we fit Gaussian class-conditional densities using maximum likelihood:
+        \begin{itemize}
+            \item $2M$ parameters for the mean.
+            \item $\frac{M(M+1)}{2}$ parameters for the shared covariance.
+            \item $1$ parameter for the class prior $p(\mathcal{C}_{1})$.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Logistic regression}
+    Using maximum likelihood to determine the parameters:
+    \begin{align*}
+        p(t_{n}|\phi_{n};w)&=y_{n}^{t_{n}}(1-y_{n})^{1-t_{n}} \\
+        \log{}p(t_{n}|\phi_{n};w)&=t_{n}\log{}y_{n}+(1-t_{n})\log(1-y_{n}) \\
+        E(w)&=-\log{}p(t_{1},\hdots,t_{N}|\phi_{1},\hdots,\phi_{N};w) \\
+        &=-\sum_{n=1}^{N}(t_{n}\log{}y_{n}+(1-t_{n})\log(1-y_{n})) \\
+        \nabla{}E(w)&=-\sum_{n=1}^{N}(\frac{t_{n}}{y_{n}}-\frac{1-t_{n}}{1-y_{n}})\frac{\mathrm{d}y_{n}}{\mathrm{d}a_{n}}\nabla_{w}a_{n} \\
+        &=\sum_{n=1}^{N}(y_{n}-t_{n})\phi_{n}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Logistic regression}
+    \begin{itemize}
+        \item $\nabla{}E(w)$ takes precisely the same form as the gradient of the sum-of-squares error function.
+        \item Due to the nonlinearity in $y$, this equation does not have a closed-form solution.
+        \item One approach to finding a maximum likelihood solution would be to use stochastic gradient descent.
+        \item Maximum likelihood can exhibit severe over-fitting for data sets that are linearly separable, which can be avoided by adding a regularization term to the error function.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Logistic regression}
+    For multi-class classification, we model the posterior probabilities as:
+    \begin{align*}
+        \begin{pmatrix}
+            p(\mathcal{C}_{1}|\phi) \\
+            \vdots \\
+            p(\mathcal{C}_{K}|\phi)
+        \end{pmatrix}&=
+        \begin{pmatrix}
+            y_{1} \\
+            \vdots \\
+            y_{K}
+        \end{pmatrix} \\
+        &=\mathrm{softmax}(a_{1}(\phi),\hdots,a_{K}(\phi)) \\
+        &=\mathrm{softmax}(w_{1}^{T}\phi,\hdots,w_{K}^{T}\phi)
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Logistic regression}
+    Using maximum likelihood to determine the parameters:
+    \begin{align*}
+        &p(t^{n}|\phi_{n};w_{1},\hdots,w_{K})=\prod_{k=1}^{K}(y^{n}_{k})^{t^{n}_{k}} \\
+        &\log{}p(t^{n}|\phi_{n};w_{1},\hdots,w_{K})=\sum_{k=1}^{K}t^{n}_{k}\log{}y^{n}_{k} \\
+        &E(w_{1},\hdots,w_{K})=-\log{}p(t^{1},\hdots,t^{N}|\phi_{1},\hdots,\phi_{N};w_{1},\hdots,w_{K}) \\
+        &\qquad=-\sum_{n=1}^{N}\sum_{k=1}^{K}t^{n}_{k}\log{}y^{n}_{k} \\
+        &\nabla_{w_{j}}E(w_{1},\hdots,w_{K})=-\sum_{n=1}^{N}(\sum_{k=1}^{K}\frac{t^{n}_{k}}{y^{n}_{k}}\frac{\partial{}y^{n}_{k}}{\partial{}a^{n}_{j}})\nabla_{w_{j}}a^{n}_{j}=\sum_{n=1}^{N}(y^{n}_{j}-t^{n}_{j})\phi_{n}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Probit regression}
+    Consider a noisy threshold model for the two-class classification. For input $\phi$, we evaluate $a=w^{T}\phi$ and then we set the target value according to:
+    \begin{align*}
+        \begin{cases}
+            t=1\textrm{,}\qquad\textrm{if }a\ge\theta \\
+            t=0\textrm{,}\qquad\textrm{otherwise.}
+        \end{cases}
+    \end{align*}
+    If the value of $\theta$ is drawn from a probability density $p(\theta)$, then we have:
+    \begin{equation*}
+        p(t=1|a)=p(a\ge\theta)=p(\theta\le{}a)=\int_{-\infty}^{a}p(\theta)\mathrm{d}\theta
+    \end{equation*}
+    Thus the activation function is given by $f(a)=\int_{-\infty}^{a}p(\theta)\mathrm{d}\theta$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Probit regression}
+    As a specific example, suppose that the density $p(\theta)$ is given by a zero-mean, unit-variance Gaussian:
+    \begin{equation*}
+        \Phi(a)=\int_{-\infty}^{a}\mathcal{N}(\theta;0,1)\mathrm{d}\theta
+    \end{equation*}
+    which is known as the probit function. The generalized linear model based on a probit activation function is known as probit regression.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Canonical link functions}
+    We have seen multiple times that the derivative to the parameter $w$ of the contribution to the error function from a data point $n$ takes the form $\nabla{}E_{n}(w)=(y_{n}-t_{n})\phi_{n}$:
+    \begin{itemize}
+        \item In linear regression, using the sum-of-squares error and the identity activation function.
+        \item In two-class classification, using the cross-entropy error and the logistic sigmoid activation function.
+        \item In multi-class classification, using the cross-entropy error and the softmax activation function.
+    \end{itemize}
+    We will see that this is not by chance.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Canonical link functions}
+    Consider conditional distribution of the target variable of the form:
+    \begin{equation*}
+        p(t|\eta;s)=\frac{1}{s}h(\frac{t}{s})g(\eta)\exp(\frac{\eta{}t}{s})
+    \end{equation*}
+    Now let's suppose we have this chain of relations:
+    \begin{itemize}
+        \item $a=w^{T}\phi$ is the pre-activation, where $w$ is the parameter vector.
+        \item $y=f(a)$ is the post-activation, where $f$ is the activation function.
+        \item $\eta=\psi(y)$ has the property that $y=E(t|\eta)$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Canonical link functions}
+    \begin{align*}
+        E(w)&=-\log{}p(t_{1},\hdots,t_{N}|\eta_{1},\hdots,\eta_{N};s) \\
+        &=N\log{}s-\sum_{n=1}^{N}\log{}h(\frac{t_{n}}{s})-\sum_{n=1}^{N}\log{}g(\eta_{n})-\frac{1}{s}\sum_{n=1}^{N}\eta_{n}t_{n} \\
+        \nabla{}E(w)&=\sum_{n=1}^{N}(-\frac{g'(\eta_{n})}{g(\eta_{n})}-\frac{t_{n}}{s})\frac{\mathrm{d}\eta_{n}}{\mathrm{d}y_{n}}\frac{\mathrm{d}y_{n}}{\mathrm{d}a_{n}}\nabla{}a_{n} \\
+        &=\frac{1}{s}\sum_{n=1}^{N}(E(t|\eta_{n})-t_{n})\psi'(y_{n})f'(a_{n})\phi_{n} \\
+        &=\frac{1}{s}\sum_{n=1}^{N}(y_{n}-t_{n})\psi'(y_{n})f'(a_{n})\phi_{n}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Canonical link functions}
+    We see that if we select the activation function $f$ so that $f^{-1}=\psi$, then:
+    \begin{equation*}
+        \psi'(y_{n})f'(a_{n})=1
+    \end{equation*}
+    and we have:
+    \begin{equation*}
+        \nabla{}E(w)=\frac{1}{s}\sum_{n=1}^{N}(y_{n}-t_{n})\phi_{n}
     \end{equation*}
 \end{frame}
 
