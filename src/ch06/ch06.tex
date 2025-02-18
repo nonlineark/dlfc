@@ -1,0 +1,76 @@
+\documentclass{beamer}
+
+\usepackage{amsmath}
+
+\usetheme{AnnArbor}
+\usecolortheme{crane}
+\usefonttheme[onlymath]{serif}
+
+\title{Deep Learning - Foundations and Concepts}
+\subtitle{Chapter 6. Deep Neural Networks}
+\author{nonlineark@github}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Limitations of Fixed Basis Functions}
+
+\begin{frame}
+    \frametitle{The curse of dimensionality}
+    In spaces of higher dimensionality, the number of combinations of values must be considered could be huge. This effect is known as combinatorial explosion:
+    \begin{itemize}
+        \item A polynomial regression of order $M$ for a single input variable needs $M+1$ parameters. If there are $D$ input variables, the number of parameters needed will be $D^{M+1}$.
+        \item The histogram based classification for $1$-dimensional input needs $N$ buckets. If the input is $D$-dimensional, the number of buckets needed will be $N^{D}$.
+    \end{itemize}
+    For a machine learning model, this usually means that the amount of data needed to generlize accurately grows exponentially.
+\end{frame}
+
+\begin{frame}
+    \frametitle{High-dimensional spaces}
+    High-dimensional spaces can defeat one's geometrical intuitions:
+    \begin{itemize}
+        \item In spaces of high dimensionality, most of the volume of a hypersphere is concentrated in a thin shell near the surface.
+        \item In spaces of high dimensionality, the probability mass of the Gaussian is concentrated in a thin shell at a specific radius (a soap bubble).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data manifolds}
+    Although data may be in high-dimensional spaces, real data will generally be confined to a region of the data space having lower effective dimensionality. Effectively, neural networks learn a set of basis functions that are adpated to data manifolds.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data manifolds}
+    \begin{figure}
+        \caption{Images of a handwritten digit that lives on a nonlinear three-dimensional manifold}
+        \includegraphics{Figure_7.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data manifolds}
+    \begin{figure}
+        \caption{Natural images vs. randomly generated images}
+        \includegraphics[height=0.7\textheight]{Figure_8.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data-dependent basis functions}
+    \begin{itemize}
+        \item Simple basis functions that are chosen independently of the problem being solved can run into significant limitations.
+        \item Using expert knowledge to hand-craft the basis functions was superseded by data-driven approaches in which basis functions are learned from the training data.
+        \item Methods such as radial basis functions and support vector machines have been superseded by deep neural networks, which are much better at exploiting very large data sets efficiently.
+    \end{itemize}
+\end{frame}
+
+\end{document}
