@@ -170,4 +170,91 @@
     \end{itemize}
 \end{frame}
 
+\section{Deep Networks}
+
+\begin{frame}
+    \frametitle{Deep networks}
+    We can easily extend the two-layer network architecture to any finite number $L$ of layers:
+    \begin{equation*}
+        z^{(l)}=h^{(l)}(W^{(l)}z^{(l-1)})\qquad{}l=1,\hdots,L
+    \end{equation*}
+    where $h^{(l)}$ denotes the activation function associated with layer $l$, and $W^{(l)}$ denotes the corresponding matrix of weight and bias parameters.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Hierarchical representations}
+    The deep neural network architecture encodes a particular form of inductive bias, namely the outputs are related to the input space through a hierarchical representation:
+    \begin{itemize}
+        \item Low-level features in early layers, e.g., edges.
+        \item Higher-level features in subsequent layers, e.g., eyes.
+        \item Combined in later layers to detect high-level concept, e.g., cats.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Distributed representations}
+    Consider a hidden layer with $M$ hidden units:
+    \begin{itemize}
+        \item Conceptually, each hidden unit can be thought of as representing a feature, so this hidden layer can represent $M$ different features.
+        \item However, the network can learn a different representation, in which combinations of hidden units represent features, so this hidden layer can represent $2^{M}$ different features.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Representation learning}
+    Consider a neural network for a two-class classification problem:
+    \begin{itemize}
+        \item The final layer can be viewed as a simple linear classifier.
+        \item In the representation of the last hidden layer, the two classes must be well separated by a linear surface.
+        \item This neural network transforms the input data into a representation that's easy for classification purposes.
+    \end{itemize}
+    This ability to discover a nonlinear transformation of the data that makes subsequent tasks easier to solve is called representatioin learning. The learned representation is sometimes called the embedding space.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Transfer learning}
+    \begin{itemize}
+        \item The process of learning parameters using one task that are then applied to one or more other tasks is called pre-training:
+        \begin{itemize}
+            \item Send the new training data once through the fixed pre-trained network to obtain the training inputs in the new representation.
+            \item Iterative gradient-based optimization can then be applied just to the smaller network consisting of the final layers.
+        \end{itemize}
+        \item Instead of using a pre-trained network as a fixed pre-processor, it is also possible to apply fine-tuning in which the whole network is adapted to the data for the new task.
+        \item In multitask learning, a network jointly learns more than one related task at the same time. For example, spam email filter for different users.
+        \item Meta-learning: Learn the learning algorithm itself. For example, few-shot learning, one-shot learning.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Contrastive learning}
+    Contrastive learning focuses on extracting meaningful representations by contrasting positive and negative pairs of instances. Given:
+    \begin{itemize}
+        \item $x$: The anchor.
+        \item $x^{+}$: Positive.
+        \item $\{x^{-}_{1},\hdots,x^{-}_{N}\}$: Negative.
+        \item $f_{w}$: The neural network function that maps points from input space to a representation space, governed by learnable parameters $w$. Futher, we require $||f_{w}(x)||=1$.
+    \end{itemize}
+    The loss function (called InfoNCE loss) is defined by:
+    \begin{equation*}
+        E(w)=-\log\frac{\exp(f_{w}(x)^{T}f_{w}(x^{+}))}{\exp(f_{w}(x)^{T}f_{w}(x^{+}))+\sum_{n=1}^{N}\exp(f_{w}(x)^{T}f_{w}(x^{-}_{n}))}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{General network architectures}
+    The neural network architecture does not have to be organized into a sequence of fully-connected layers. The network diagram only needs to be restricted to a feed-forward architecture. Each unit in such a network computes a function given by:
+    \begin{equation*}
+        z_{k}=h(\sum_{j\in\mathcal{A}(k)}w_{kj}z_{j}+b_{k})
+    \end{equation*}
+    where $\mathcal{A}(k)$ denotes the set of ancestors of node $k$, and $b_{k}$ denotes the associated bias parameter.
+\end{frame}
+
+\begin{frame}
+    \frametitle{General network architectures}
+    \begin{figure}
+        \caption{A neural network having a general feed-forward topology}
+        \includegraphics{Figure_15.pdf}
+    \end{figure}
+\end{frame}
+
 \end{document}
