@@ -257,4 +257,51 @@
     \end{figure}
 \end{frame}
 
+\section{Error Functions}
+
+\begin{frame}
+    \frametitle{Regression}
+    For single target variable:
+    \begin{align*}
+        p(t|x;w)&=\mathcal{N}(t;y(x;w),\sigma^{2}) \\
+        E(w)&=\frac{1}{2}\sum_{n=1}^{N}(y(x_{n};w)-t_{n})^{2} \\
+        \frac{\partial{}E}{\partial{}a_{n}}&=y(x_{n};w)-t_{n}
+    \end{align*}
+    For multiple target variables:
+    \begin{align*}
+        p(t|x;w)&=\mathcal{N}(t;y(x;w),\sigma^{2}I) \\
+        E(w)&=\frac{1}{2}\sum_{n=1}^{N}||y(x^{n};w)-t^{n}||^{2} \\
+        \frac{\partial{}E}{\partial{}a^{n}}&=(y(x^{n};w)-t^{n})^{T}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Binary classification}
+    For single target variable:
+    \begin{align*}
+        p(t|x;w)&=y(x;w)^{t}(1-y(x;w))^{1-t} \\
+        E(w)&=-\sum_{n=1}^{N}(t_{n}\log{}y_{n}+(1-t_{n})\log(1-y_{n})) \\
+        \frac{\partial{}E}{\partial{}a_{n}}&=y_{n}-t_{n}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Binary classification}
+    For multiple target variables:
+    \begin{align*}
+        p(t|x;w_{1},\hdots,w_{K})&=\prod_{k=1}^{K}y(x;w_{k})^{t_{k}}(1-y(x;w_{k}))^{1-t_{k}} \\
+        E(w_{1},\hdots,w_{K})&=-\sum_{n=1}^{N}\sum_{k=1}^{K}(t^{n}_{k}\log{}y^{n}_{k}+(1-t^{n}_{k})\log(1-y^{n}_{k})) \\
+        \frac{\partial{}E}{\partial{}a^{n}}&=(y^{n}-t^{n})^{T}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Multiclass classification}
+    \begin{align*}
+        p(t|x;w_{1},\hdots,w_{K})&=\prod_{k=1}^{K}y_{k}(x;w_{1},\hdots,w_{K})^{t_{k}} \\
+        E(w_{1},\hdots,w_{K})&=-\sum_{n=1}^{N}\sum_{k=1}^{K}t^{n}_{k}\log{}y^{n}_{k} \\
+        \frac{\partial{}E}{\partial{}a^{n}}&=(y^{n}-t^{n})^{T}
+    \end{align*}
+\end{frame}
+
 \end{document}
