@@ -304,4 +304,129 @@
     \end{align*}
 \end{frame}
 
+\section{Mixture Density Networks}
+
+\begin{frame}
+    \frametitle{Robot kinematics example}
+    \begin{itemize}
+        \item For many simple regression problems, the conditional distribution $p(t|x)$ we choose to model is Gaussian.
+        \item Practical machine learning problems can often have significantly non-Gaussian distributions.
+        \item Forward problem (many-to-one) vs. inverse problem (multimodal):
+        \begin{itemize}
+            \item Kinematics of a robot arm:
+            \begin{itemize}
+                \item Forward problem: Given the joint angles, find the end effector position.
+                \item Inverse problem: Given the end effector position, find the joint angles.
+            \end{itemize}
+            \item Symptoms in the human body:
+            \begin{itemize}
+                \item Forward problem: Given the presence of a particular disease, find the pattern of symptoms.
+                \item Inverse problem: Given the pattern of symptoms, predict the presence of a disease.
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Robot kinematics example}
+    \begin{figure}
+        \caption{A robot kinematics example}
+        \includegraphics{Figure_16_a.pdf}
+        \includegraphics{Figure_16_b.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conditional mixture distributions}
+    The inverse problem for tutorial purposes:
+    \begin{itemize}
+        \item $\{x_{1},\hdots,x_{N}\}$ is uniformly sampled from $(0,1)$.
+        \item $t_{n}=x_{n}+0.3\sin(2\pi{}x_{n})+\epsilon$, where $\epsilon$ is some uniform noise over the interval $(-0.1,0.1)$.
+        \item The inverse problem is obtained by exchanging the roles of $x$ and $t$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conditional mixture distributions}
+    \begin{figure}
+        \caption{The inverse problem for tutorial purposes}
+        \includegraphics{Figure_17_a.pdf}
+        \includegraphics{Figure_17_b.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conditional mixture distributions}
+    We will model $p(t|x)$ using a mixture model in which both the mixing coefficients as well as the component densities are flexible functions of $x$:
+    \begin{equation*}
+        p(t|x)=\sum_{k=1}^{K}\pi_{k}(x)\mathcal{N}(t;\mu_{k}(x),\sigma^{2}_{k}(x)I)
+    \end{equation*}
+    where there are $K$ components in total, and $t\in\mathbb{R}^{L}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conditional mixture distributions}
+    We now take the various parameters of the mixture model to be governed by the outputs of a neural network that takes $x$ as its input:
+    \begin{itemize}
+        \item $\pi_{k}(x)$:
+        \begin{itemize}
+            \item $K$ output units, with pre-activations denoted by $a^{\pi}_{k}$.
+            \item Activation function: $\pi_{k}(x)=\frac{\exp(a^{\pi}_{k})}{\sum_{j=1}^{K}\exp(a^{\pi}_{j})}$.
+        \end{itemize}
+        \item $\mu_{k}(x)$:
+        \begin{itemize}
+            \item $KL$ output units, with pre-activations denoted by $a^{\mu}_{kl}$.
+            \item Activation function: The identity function, $\mu_{kl}(x)=a^{\mu}_{kl}$.
+        \end{itemize}
+        \item $\sigma_{k}(x)$:
+        \begin{itemize}
+            \item $K$ output units, with pre-activations denoted by $a^{\sigma}_{k}$.
+            \item Activation function: $\sigma_{k}(x)=\exp(a^{\sigma}_{k})$.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Gradient optimization}
+    The error function (the negative log of the maximum likelihood) takes the form:
+    \begin{equation*}
+        E(w)=-\sum_{n=1}^{N}\log(\sum_{k=1}^{K}\pi_{k}(x_{n})\mathcal{N}(t_{n};\mu_{k}(x_{n}),\sigma^{2}_{k}(x_{n})I))
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Gradient optimization}
+    Let's compute the derivatives of the error of the $n$th term with respect to the output-unit pre-activations:
+    \begin{align*}
+        \frac{\partial{}E_{n}}{\partial{}a^{\pi}_{k}}&=-\frac{1}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}\sum_{j=1}^{K}\mathcal{N}_{nj}\frac{\partial\pi_{k}}{\partial{}a^{\pi}_{k}}=\pi_{k}-\frac{\pi_{k}\mathcal{N}_{nk}}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}} \\
+        \frac{\partial{}E_{n}}{\partial{}a^{\mu}_{k}}&=-\frac{1}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}\pi_{k}\mathcal{N}_{nk}(-\frac{1}{\sigma^{2}_{k}})(\mu_{k}-t_{n})^{T} \\
+        &=\frac{\pi_{k}\mathcal{N}_{nk}}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}\frac{(\mu_{k}-t_{n})^{T}}{\sigma^{2}_{k}} \\
+        \frac{\partial{}E_{n}}{\partial{}a^{\sigma}_{k}}&=-\frac{1}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}\pi_{k}(-\frac{L}{\sigma_{k}}\mathcal{N}_{nk}+\mathcal{N}_{nk}\frac{||\mu_{k}-t_{n}||^{2}}{\sigma_{k}^{3}})\frac{\mathrm{d}\sigma_{k}}{\mathrm{d}a^{\sigma}_{k}} \\
+        &=\frac{\pi_{k}\mathcal{N}_{nk}}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}(L-\frac{||\mu_{k}-t_{n}||^{2}}{\sigma^{2}_{k}})
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Predictive distribution}
+    Compute the conditional mean and variance, we see that:
+    \begin{align*}
+        E(t|x)&=\int{}tp(t|x)\mathrm{d}t=\sum_{k=1}^{K}\pi_{k}\int{t}\mathcal{N}(t;\mu_{k},\sigma^{2}_{k}I)\mathrm{d}t=\sum_{k=1}^{K}\pi_{k}\mu_{k} \\
+        E(||t-x||^{2}|x)&=E(||t||^{2}|x)-||E(t|x)||^{2} \\
+        &=\sum_{k=1}^{K}\pi_{k}(||\mu_{k}||^{2}+\sigma^{2}_{k})-||\sum_{k=1}^{K}\pi_{k}\mu_{k}||^{2}
+    \end{align*}
+    Compared with least-squares result, the mixture density network is more general:
+    \begin{itemize}
+        \item It can reproduce the least-squares result as a special case.
+        \item The variance is more general because it is a function of $x$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Predictive distribution}
+    \begin{figure}
+        \caption{Plot of the approximate conditional mode}
+        \includegraphics{Figure_19_d.pdf}
+    \end{figure}
+\end{frame}
+
 \end{document}
