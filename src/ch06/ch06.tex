@@ -390,7 +390,7 @@
     \frametitle{Gradient optimization}
     The error function (the negative log of the maximum likelihood) takes the form:
     \begin{equation*}
-        E(w)=-\sum_{n=1}^{N}\log(\sum_{k=1}^{K}\pi_{k}(x_{n})\mathcal{N}(t_{n};\mu_{k}(x_{n}),\sigma^{2}_{k}(x_{n})I))
+        E(w)=-\sum_{n=1}^{N}\log(\sum_{k=1}^{K}\pi_{k}(x^{n})\mathcal{N}(t^{n};\mu_{k}(x^{n}),\sigma^{2}_{k}(x^{n})I))
     \end{equation*}
 \end{frame}
 
@@ -398,11 +398,11 @@
     \frametitle{Gradient optimization}
     Let's compute the derivatives of the error of the $n$th term with respect to the output-unit pre-activations:
     \begin{align*}
-        \frac{\partial{}E_{n}}{\partial{}a^{\pi}_{k}}&=-\frac{1}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}\sum_{j=1}^{K}\mathcal{N}_{nj}\frac{\partial\pi_{k}}{\partial{}a^{\pi}_{k}}=\pi_{k}-\frac{\pi_{k}\mathcal{N}_{nk}}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}} \\
-        \frac{\partial{}E_{n}}{\partial{}a^{\mu}_{k}}&=-\frac{1}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}\pi_{k}\mathcal{N}_{nk}(-\frac{1}{\sigma^{2}_{k}})(\mu_{k}-t_{n})^{T} \\
-        &=\frac{\pi_{k}\mathcal{N}_{nk}}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}\frac{(\mu_{k}-t_{n})^{T}}{\sigma^{2}_{k}} \\
-        \frac{\partial{}E_{n}}{\partial{}a^{\sigma}_{k}}&=-\frac{1}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}\pi_{k}(-\frac{L}{\sigma_{k}}\mathcal{N}_{nk}+\mathcal{N}_{nk}\frac{||\mu_{k}-t_{n}||^{2}}{\sigma_{k}^{3}})\frac{\mathrm{d}\sigma_{k}}{\mathrm{d}a^{\sigma}_{k}} \\
-        &=\frac{\pi_{k}\mathcal{N}_{nk}}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}_{nj}}(L-\frac{||\mu_{k}-t_{n}||^{2}}{\sigma^{2}_{k}})
+        \frac{\partial{}E_{n}}{\partial{}a^{\pi}_{k}}&=-\frac{1}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}^{n}_{j}}\sum_{j=1}^{K}\mathcal{N}^{n}_{j}\frac{\partial\pi_{k}}{\partial{}a^{\pi}_{k}}=\pi_{k}-\frac{\pi_{k}\mathcal{N}^{n}_{k}}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}^{n}_{j}} \\
+        \frac{\partial{}E_{n}}{\partial{}a^{\mu}_{k}}&=-\frac{1}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}^{n}_{j}}\pi_{k}\mathcal{N}^{n}_{k}(-\frac{1}{\sigma^{2}_{k}})(\mu_{k}-t^{n})^{T} \\
+        &=\frac{\pi_{k}\mathcal{N}^{n}_{k}}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}^{n}_{j}}\frac{(\mu_{k}-t^{n})^{T}}{\sigma^{2}_{k}} \\
+        \frac{\partial{}E_{n}}{\partial{}a^{\sigma}_{k}}&=-\frac{1}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}^{n}_{j}}\pi_{k}(-\frac{L}{\sigma_{k}}\mathcal{N}^{n}_{k}+\mathcal{N}^{n}_{k}\frac{||\mu_{k}-t^{n}||^{2}}{\sigma_{k}^{3}})\frac{\mathrm{d}\sigma_{k}}{\mathrm{d}a^{\sigma}_{k}} \\
+        &=\frac{\pi_{k}\mathcal{N}^{n}_{k}}{\sum_{j=1}^{K}\pi_{j}\mathcal{N}^{n}_{j}}(L-\frac{||\mu_{k}-t^{n}||^{2}}{\sigma^{2}_{k}})
     \end{align*}
 \end{frame}
 
