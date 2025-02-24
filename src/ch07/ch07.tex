@@ -1,5 +1,8 @@
 \documentclass{beamer}
 
+\usepackage[ruled]{algorithm2e}
+\SetKw{KwRet}{return}
+\SetKwRepeat{Repeat}{repeat}{until}
 \usepackage{amsmath}
 
 \usetheme{AnnArbor}
@@ -101,6 +104,140 @@
         \caption{Geometry of the error surface in the neighbourhood of a minimum $w^{*}$}
         \includegraphics{Figure_2.pdf}
     \end{figure}
+\end{frame}
+
+\section{Gradient Descent Optimization}
+
+\begin{frame}
+    \frametitle{Use of gradient information}
+    There is no way we can find an analytical solution to the equation $\nabla{}E(w)=0$, so we resort to iterative numerical procedures to minimize the error function:
+    \begin{equation*}
+        w^{(\tau)}=w^{(\tau-1)}+\Delta{}w^{(\tau-1)}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Use of gradient information}
+    Let's estimate the computational effort needed. The Taylor expansion of $E(w)$ around some point $\hat{w}$ in weight space is given by:
+    \begin{equation*}
+        E(w)\approx{}E(\hat{w})+(w-\hat{w})^{T}\nabla{}E(\hat{w})+\frac{1}{2}(w-\hat{w})^{T}HE(\hat{w})(w-\hat{w})
+    \end{equation*}
+    We see that in order to locate the minimum, we need at least $\mathcal{O}(W^{2})$ pieces of information, because:
+    \begin{itemize}
+        \item $\nabla{}E(\hat{w})$ contains $W$ independent parameters.
+        \item $HE(\hat{w})$ contains $\frac{W(W+1)}{2}$ independent parameters.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Use of gradient information}
+    \begin{itemize}
+        \item If we do not make use of gradient information, we would expect to have to perform $\mathcal{O}(W^{2})$ function evaluations, each of which would require $\mathcal{O}(W)$ steps. Thus the total cost would be $\mathcal{O}(W^{3})$.
+        \item If we make use of the gradient information, each evaluation of $\nabla{}E$ brings $W$ pieces of information, so we would expect to find the minimum of the function in $\mathcal{O}(W)$ gradient evaluations. In the next chapter we shall see, by using error backpropagation, each such evaluation takes only $\mathcal{O}(W)$ steps. Thus the total cost would be $\mathcal{O}(W^{2})$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Batch gradient descent}
+    The simplest approach to using gradient information is to take a small step in the direction of the negative gradient:
+    \begin{equation*}
+        w^{(\tau)}=w^{(\tau-1)}-\eta\nabla{}E(w^{(\tau-1)})
+    \end{equation*}
+    where the parameter $\eta>0$ is known as the learning rate. At each step:
+    \begin{itemize}
+        \item The weight vector is moved in the direction of the greatest rate of decrease of the error function ("gradient descent" in the name).
+        \item The entire training set will be processed ("batch" in the name).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Stochastic gradient descent}
+    Note that error functions based on maximum likelihood for a set of independent observations comprise a sum of terms: $E(w)=\sum_{n=1}^{N}E_{n}(w)$. We can update the weight vector based on one data point at a time:
+    \begin{equation*}
+        w^{(\tau)}=w^{(\tau-1)}-\eta\nabla{}E_{n}(w^{(\tau-1)})
+    \end{equation*}
+    Advantages of stochastic gradient descent:
+    \begin{itemize}
+        \item It is much more efficient on very large data sets.
+        \item It works when the data arises from a continuous stream of new data points (a.k.a., online algorithm).
+        \item It handles redundancy in the data much more efficiently.
+        \item The possibility of escaping from local minima.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Stochastic gradient descent}
+    \begin{algorithm}[H]
+        \caption{Stochastic gradient descent}
+        $n\gets{}1$\;
+        \Repeat{convergence}{
+            $w\gets{}w-\eta\nabla{}E_{n}(w)$\;
+            $n\gets{}n+1(\mathrm{mod}N)$\;
+        }
+        \Return{$w$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Mini-batches}
+    \begin{algorithm}[H]
+        \caption{Mini-batch stochastic gradient descent}
+        $n\gets{}1$\;
+        \Repeat{convergence}{
+            $w\gets{}w-\eta\nabla{}E_{n:n+B-1}(w)$\;
+            $n\gets{}n+B$\;
+            \If{$n>N$}{
+                shuffle data\;
+                $n\gets{}1$\;
+            }
+        }
+        \Return{$w$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Parameter initialization}
+    The initial setting for the parameters being learned can have a significant effect on:
+    \begin{itemize}
+        \item How long it takes to reach a solution.
+        \item The generalization performance of the resulting trained network.
+    \end{itemize}
+    Although there is relatively little theory to guide the initialization strategy, one key consideration is symmetry breaking, by initializing parameters randomly from some distribution:
+    \begin{itemize}
+        \item Uniform distribution in the range $[-\epsilon,\epsilon]$.
+        \item Zero-mean Gaussian of the form $\mathcal{N}(0,\epsilon^{2})$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Parameter initialization}
+    The approach of He initialization for choosing the value of $\epsilon$. Consider a network in which layer $l$ evaluates the following transformations:
+    \begin{align*}
+        a^{(l)}_{i}&=\sum_{m=1}^{M}w_{im}z^{(l-1)}_{m} \\
+        z^{(l)}_{i}&=\mathrm{ReLU}(a^{(l)}_{i})
+    \end{align*}
+    Suppose we initialize the weights using a Gaussian $\mathcal{N}(0,\epsilon^{2})$, and suppose that the pre-activations $a^{(l-1)}_{m}$ in layer $l-1$ have variance $\lambda^{2}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Parameter initialization}
+    We see that:
+    \begin{align*}
+        E(a^{(l)}_{i})&=\sum_{m=1}^{M}E(w_{im})E(z^{(l-1)}_{m})=0 \\
+        \mathrm{var}(a^{(l)}_{i})&=E((a^{(l)}_{i})^{2})-(E(a^{(l)}_{i}))^{2}=E((a^{(l)}_{i})^{2}) \\
+        &=E(\sum_{1\le{}m,n\le{}M}w_{im}w_{in}z^{(l-1)}_{m}z^{(l-1)}_{n})=E(\sum_{m=1}^{M}w_{im}^{2}(z^{(l-1)}_{m})^{2}) \\
+        &=\sum_{m=1}^{M}E(w_{im}^{2})E((z^{(l-1)}_{m})^{2})=\sum_{m=1}^{M}\epsilon^{2}\frac{1}{2}E((a^{(l-1)}_{m})^{2}) \\
+        &=\sum_{m=1}^{M}\epsilon^{2}\frac{1}{2}\lambda^{2}=\frac{M}{2}\epsilon^{2}\lambda^{2}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Parameter initialization}
+    If we require that the pre-activations at layer $l$ also have variance $\lambda^{2}$ then we arrive at the following choice for $\epsilon$ to initialize the weights that feed into a unit with $M$ inputs:
+    \begin{equation*}
+        \epsilon=\sqrt{\frac{2}{M}}
+    \end{equation*}
+    The bias parameters are typically set to small positive values to ensure that most pre-activations are initally active during learning.
 \end{frame}
 
 \end{document}
