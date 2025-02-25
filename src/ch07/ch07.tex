@@ -240,4 +240,154 @@
     The bias parameters are typically set to small positive values to ensure that most pre-activations are initally active during learning.
 \end{frame}
 
+\section{Convergence}
+
+\begin{frame}
+    \frametitle{The rate of convergence}
+    When applying gradient descent in practice, we need to choose a value for the learning parameter $\eta$:
+    \begin{itemize}
+        \item Increasing the value of $\eta$ may lead to oscillations, and if we increase $\eta$ too much, those oscillations will become divergent.
+        \item So $\eta$ must be kept sufficiently small, gradient descent then takes many small steps to reach the minimum and is a very inefficient procedure.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The rate of convergence}
+    Consider the local quadratic approximation around a point $w^{*}$ that is a minimum of the error function:
+    \begin{align*}
+        E(w)&=E(w^{*})+\frac{1}{2}(w-w^{*})^{T}HE(w^{*})(w-w^{*}) \\
+        \nabla{}E(w)&=HE(w^{*})(w-w^{*})
+    \end{align*}
+    And there is an orthogonal matrix $U$ that will diagonalize $HE(w^{*})$: $\Lambda=U^{T}HE(w^{*})U$. Under this new orthonormal basis where the transformation is given by $w-w^{*}=Uu$, we see that:
+    \begin{align*}
+        \Delta{}u&=U^{T}\Delta{}w=U^{T}(-\eta\nabla{}E(w))=-\eta{}U^{T}HE(w^{*})(w-w^{*}) \\
+        &=-\eta{}U^{T}(U\Lambda{}U^{T})Uu=-\eta\Lambda{}u
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The rate of convergence}
+    For the $i$th coordinate, this is simply:
+    \begin{align*}
+        \Delta{}u_{i}&=-\eta\lambda_{i}u_{i} \\
+        u_{i}^{\textrm{new}}&=(1-\eta\lambda_{i})u_{i}^{\textrm{old}} \\
+        u_{i}^{(T)}&=(1-\eta\lambda_{i})^{T}u_{i}^{(0)}
+    \end{align*}
+    It follows that, provided $|1-\eta\lambda_{i}|<1$, the limit $T\to\infty$ leads to $u_{i}=0$, which means $w=w^{*}$, and so the weight vector has reached the minimum of the error. Further we see that:
+    \begin{itemize}
+        \item Convergence to the stationary point requires that all the $\lambda_{i}$ be positive.
+        \item The value of $\eta$ has to be $\eta<\frac{2}{\lambda_{\textrm{max}}}$ where $\lambda_{\textrm{max}}$ is the largest of the eigenvalues.
+        \item The rate of convergence is dominated by the smallest eigenvalue.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Momentum}
+    One simple technique for dealing with the problem of widely differing eigenvalues is to add a momentum term to the gradient descent formula:
+    \begin{equation*}
+        \Delta{}w^{(\tau-1)}=-\eta\nabla{}E(w^{(\tau-1)})+\mu\Delta{}w^{(\tau-2)}
+    \end{equation*}
+    To understand the effect of the momentum term, let's consider two cases:
+    \begin{itemize}
+        \item If the error surface has relatively low curvature ($\nabla{}E(w)$ is almost constant): $\Delta{}w=-\eta\nabla{}E(1+\mu+\mu^{2}+\cdots)=-\frac{\eta}{1-\mu}\nabla{}E$. We see the effective learning rate is increased from $\eta$ to $\frac{\eta}{1-\mu}$.
+        \item If the error surface has high curvature in which the gradient descent is oscillatory, successive contributions from the momentum term will tend to cancel and the effective learning rate will be close to $\eta$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Momentum}
+    \begin{figure}
+        \caption{The effect of the momentum term}
+        \includegraphics[height=0.4\textheight]{Figure_4.pdf}
+        \includegraphics[height=0.4\textheight]{Figure_5.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Momentum}
+    \begin{algorithm}[H]
+        \caption{Stochastic gradient descent with momentum}
+        $n\gets{}1$\;
+        $\Delta{}w\gets{}0$\;
+        \Repeat{convergence}{
+            $\Delta{}w\gets-\eta\nabla{}E_{n:n+B-1}(w)+\mu\Delta{}w$\;
+            $w\gets{}w+\Delta{}w$\;
+            $n\gets{}n+B$\;
+            \If{$n>N$}{
+                suffle data\;
+                $n\gets{}1$\;
+            }
+        }
+        \Return{$w$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Learning rate schedule}
+    To specify a value for the learning rate parameter $\eta$, in practice, the best results are obtained by using a larger value for $\eta$ at the start of training and then reducing the learning rate over time:
+    \begin{equation*}
+        w^{(\tau)}=w^{(\tau-1)}-\eta^{(\tau-1)}\nabla{}E_{n}(w^{(\tau-1)})
+    \end{equation*}
+    Here are some examples of learning rate schedules:
+    \begin{align*}
+        \eta^{(\tau)}&=(1-\frac{\tau}{K})\eta^{(0)}+\frac{\tau}{K}\eta^{(K)} \\
+        \eta^{(\tau)}&=\eta^{(0)}(1+\frac{\tau}{s})^{c} \\
+        \eta^{(\tau)}&=\eta^{(0)}c^{\frac{\tau}{s}}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{RMSProp and Adam}
+    The optimal learning rate depends on the local curvature of the error surface. There are several algorithms that use different learning rates for each parameter in the network.
+    \bigbreak
+    AdaGrad (adaptive gradient):
+    \begin{align*}
+        r^{(\tau)}_{i}&=r^{(\tau-1)}_{i}+(\frac{\partial{}E(w)}{\partial{}w^{(\tau-1)}_{i}})^{2} \\
+        w^{(\tau)}_{i}&=w^{(\tau-1)}_{i}-\frac{\eta}{\sqrt{r^{(\tau)}_{i}}+\delta}\frac{\partial{}E(w)}{\partial{}w^{(\tau-1)}_{i}}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{RMSProp and Adam}
+    RMSProp (root mean square propagation):
+    \begin{align*}
+        r^{(\tau)}_{i}&=\beta{}r^{(\tau-1)}_{i}+(1-\beta)(\frac{\partial{}E(w)}{\partial{}w^{(\tau-1)}_{i}})^{2} \\
+        w^{(\tau)}_{i}&=w^{(\tau-1)}_{i}-\frac{\eta}{\sqrt{r^{(\tau)}_{i}}+\delta}\frac{\partial{}E(w)}{\partial{}w^{(\tau-1)}_{i}}
+    \end{align*}
+    where $0<\beta<1$ and a typical value is $\beta=0.9$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{RMSProp and Adam}
+    Adam (adaptive moments):
+    \begin{align*}
+        s^{(\tau)}_{i}&=\beta_{1}s^{(\tau-1)}_{i}+(1-\beta_{1})\frac{\partial{}E(w)}{\partial{}w^{(\tau-1)}_{i}} \\
+        r^{(\tau)}_{i}&=\beta_{2}r^{(\tau-1)}_{i}+(1-\beta_{2})(\frac{\partial{}E(w)}{\partial{}w^{(\tau-1)}_{i}})^{2} \\
+        \hat{s}^{(\tau)}_{i}&=\frac{s^{(\tau)}_{i}}{1-\beta_{1}^{\tau}} \\
+        \hat{r}^{(\tau)}_{i}&=\frac{r^{(\tau)}_{i}}{1-\beta_{2}^{\tau}} \\
+        w^{(\tau)}_{i}&=w^{(\tau-1)}_{i}-\frac{\eta}{\sqrt{\hat{r}^{(\tau)}_{i}}+\delta}\hat{s}^{(\tau)}_{i}
+    \end{align*}
+    where $0<\beta_{1},\beta_{2}<1$ and typical values for them are $\beta_{1}=0.9$ and $\beta_{2}=0.99$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{RMSProp and Adam}
+    \begin{algorithm}[H]
+        \caption{Adam optimization}
+        $n\gets{}1,\tau\gets{}1,s\gets{}0,r\gets{}0$\;
+        \Repeat{convergence}{
+            $g=\nabla{}E_{n:n+B-1}(w)$\;
+            $s\gets\beta_{1}s+(1-\beta_{1})g,r\gets\beta_{2}r+(1-\beta_{2})g*g$\;
+            $\hat{s}\gets\frac{s}{1-\beta_{1}^{\tau}},\hat{r}\gets\frac{r}{1-\beta_{2}^{\tau}}$\;
+            $w\gets{}w-\frac{\eta}{\sqrt{\hat{r}}+\delta}\hat{s}$\;
+            $n\gets{}n+B,\tau\gets\tau+1$\;
+            \If{$n>N$}{
+                shuffle data\;
+                $n\gets{}1$\;
+            }
+        }
+        \Return{$w$}\;
+    \end{algorithm}
+\end{frame}
+
 \end{document}
