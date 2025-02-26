@@ -390,4 +390,84 @@
     \end{algorithm}
 \end{frame}
 
+\section{Normalization}
+
+\begin{frame}
+    \frametitle{Data normalization}
+    For continuous input variables, it can be very beneficial to re-scale the input values so that they span similar ranges:
+    \begin{align*}
+        \mu_{i}&=\frac{1}{N}\sum_{n=1}^{N}x^{n}_{i} \\
+        \sigma^{2}_{i}&=\frac{1}{N}\sum_{n=1}^{N}(x^{n}_{i}-\mu_{i})^{2} \\
+        \tilde{x}^{n}_{i}&=\frac{x^{n}_{i}-\mu_{i}}{\sigma_{i}}
+    \end{align*}
+    This way the re-scaled values $\{\tilde{x}^{n}_{i}\}$ have zero mean and unit variance.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data normalization}
+    \begin{figure}
+        \caption{Illustration of input data normalization}
+        \includegraphics{Figure_7.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Batch normalization}
+    \begin{itemize}
+        \item If there is wide variation in the range of activation values in a particular hidden layer, then normalizing those values to have zero mean and unit variance should make the learning problem easier for the next layer.
+        \item Batch normalization largely resolves the issues of vanishing gradients and exploding gradients.
+        \item We can either normalize the pre-activation values $a_{i}$ or the activation values $z_{i}$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Batch normalization}
+    For a mini-batch of size $K$:
+    \begin{align*}
+        \mu_{m}&=\frac{1}{K}\sum_{k=1}^{K}a^{k}_{m} \\
+        \sigma^{2}_{m}&=\frac{1}{K}\sum_{k=1}^{K}(a^{k}_{m}-\mu_{m})^{2} \\
+        \hat{a}^{k}_{m}&=\frac{a^{k}_{m}-\mu_{m}}{\sqrt{\sigma^{2}_{m}+\delta}} \\
+        \tilde{a}^{k}_{m}&=\gamma_{m}\hat{a}^{k}_{m}+\beta_{m}
+    \end{align*}
+    where $\beta_{m}$ and $\gamma_{m}$ are adaptive parameters that are learned by gadient descent to compensate the reduction of the layer's representational capability caused by the normalization.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Batch normalization}
+    During the inference phase, the training mini-batches are no longer available, and we cannot determine a mean and variance from just one data example. To solve this, we compute moving averages throughout the training phase:
+    \begin{align*}
+        \bar{\mu}^{(\tau)}_{i}&=\alpha\bar{\mu}^{(\tau-1)}_{i}+(1-\alpha)\mu_{i} \\
+        \bar{\sigma}^{(\tau)}_{i}&=\alpha\bar{\sigma}^{(\tau-1)}_{i}+(1-\alpha)\sigma_{i}
+    \end{align*}
+    where $0\le\alpha\le{}1$. These moving averages are used to process new data points during the inference phase.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Batch normalization}
+    \begin{figure}
+        \caption{Illustration of batch normalization}
+        \includegraphics{Figure_8_a.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Layer normalization}
+    An alternative to normalizing across examples within a mini-batch for each hidden unit separately is to normalize across the hidden-unit values for each data point separately. For a layer with $M$ hidden units:
+    \begin{align*}
+        \mu_{k}&=\frac{1}{M}\sum_{m=1}^{M}a^{k}_{m} \\
+        \sigma^{2}_{k}&=\frac{1}{M}\sum_{m=1}^{M}(a^{k}_{m}-\mu_{k})^{2} \\
+        \hat{a}^{k}_{m}&=\frac{a^{k}_{m}-\mu_{k}}{\sqrt{\sigma^{2}_{k}+\delta}} \\
+        \tilde{a}^{k}_{m}&=\gamma_{m}\hat{a}^{k}_{m}+\beta_{m}
+    \end{align*}
+    Note that the same normalization function can be employed during training and during inference.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Layer normalization}
+    \begin{figure}
+        \caption{Illustration of layer normalization}
+        \includegraphics[height=0.6\textheight]{Figure_8_b.pdf}
+    \end{figure}
+\end{frame}
+
 \end{document}
