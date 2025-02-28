@@ -151,4 +151,107 @@
     \end{equation*}
 \end{frame}
 
+\section{Automatic Differentiation}
+
+\begin{frame}
+    \frametitle{Gradient evaluation}
+    There are four ways in which the gradient of a neural network error function can be evaluated:
+    \begin{itemize}
+        \item Derive the backpropagation equations by hand and then implement them explicitly in software: time-consuming, error prone, code redundancy.
+        \item Finite differences: limited computational accuracy, scales poorly.
+        \item Symbolic differentiation: expression swell, long evaluation times, requires closed form.
+        \item Automatic differentiation: accurate, efficient, can deal with control flow elements.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Forward-mode automatic differentiation}
+    Augment each intermediate variable $v_{i}$, known as a primal variable, with an additional variable representing the value of some derivative of that variable, which we can denote $\dot{v}_{i}$, known as a tangent variable.
+    \bigbreak
+    Instead of simply doing forward propagation to compute $\{v_{i}\}$, the code now propagates tuples $(v_{i},\dot{v}_{i})$ so that variables and derivatives are evaluated in parallel.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Forward-mode automatic differentiation}
+    Consider the following function:
+    \begin{equation*}
+        f(x_{1},x_{2})=x_{1}x_{2}+\exp(x_{1}x_{2})-\sin{}x_{2}
+    \end{equation*}
+    Suppose we want to evaluate the derivative $\frac{\partial{}f}{\partial{}x_{1}}$. Let's define the primal variables:
+    \begin{align*}
+        v_{1}&=x_{1}&v_{2}&=x_{2} \\
+        v_{3}&=v_{1}v_{2}&v_{4}&=\sin{}v_{2} \\
+        v_{5}&=\exp(v_{3})&v_{6}&=v_{3}-v_{4} \\
+        v_{7}&=v_{5}+v_{6}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Forward-mode automatic differentiation}
+    \begin{figure}
+        \caption{Evaluation trace diagram}
+        \includegraphics{Figure_4.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Forward-mode automatic differentiation}
+    Let's define the tangent variables by $\dot{v}_{i}=\frac{\partial{}v_{i}}{\partial{}x_{1}}$. Expressions for evaluating these can be constructed automatically using the chain rule:
+    \begin{equation*}
+        \dot{v}_{i}=\frac{\partial{}v_{i}}{\partial{}x_{1}}=\sum_{j\in\mathrm{pa}(i)}\frac{\partial{}v_{i}}{\partial{}v_{j}}\frac{\partial{}v_{j}}{\partial{}x_{1}}=\sum_{j\in\mathrm{pa}(i)}\dot{v}_{j}\frac{\partial{}v_{i}}{\partial{}v_{j}}
+    \end{equation*}
+    where $\mathrm{pa}(i)$ denotes the set of parents of the node $i$ in the evaluation trace diagram. Thus for the tangent variables, we have:
+    \begin{align*}
+        \dot{v}_{1}&=1&\dot{v}_{2}&=0 \\
+        \dot{v}_{3}&=\frac{\partial{}v_{3}}{\partial{}v_{1}}\dot{v}_{1}+\frac{\partial{}v_{3}}{\partial{}v_{2}}\dot{v}_{2}=v_{2}\dot{v}_{1}+v_{1}\dot{v}_{2}&\dot{v}_{4}&=\frac{\partial{}v_{4}}{\partial{}v_{2}}\dot{v}_{2}=\dot{v}_{2}\cos{}v_{2} \\
+        \dot{v}_{5}&=\frac{\partial{}v_{5}}{\partial{}v_{3}}\dot{v}_{3}=\dot{v}_{3}\exp(v_{3})&\dot{v}_{6}&=\frac{\partial{}v_{6}}{\partial{}v_{3}}\dot{v}_{3}+\frac{\partial{}v_{6}}{\partial{}v_{4}}\dot{v}_{4}=\dot{v}_{3}-\dot{v}_{4} \\
+        \dot{v}_{7}&=\frac{\partial{}v_{7}}{\partial{}v_{5}}\dot{v}_{5}+\frac{\partial{}v_{7}}{\partial{}v_{6}}\dot{v}_{6}=\dot{v}_{5}+\dot{v}_{6}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Forward-mode automatic differentiation}
+    Now consider an example with two outputs:
+    \begin{align*}
+        f_{1}(x_{1},x_{2})&=x_{1}x_{2}+\exp(x_{1}x_{2})-\sin{}x_{2} \\
+        f_{2}(x_{1},x_{2})&=(x_{1}x_{2}-\sin{}x_{2})\exp(x_{1}x_{2})
+    \end{align*}
+    We see that both $\frac{\partial{}f_{1}}{\partial{}x_{1}}$ and $\frac{\partial{}f_{2}}{\partial{}x_{1}}$ can be evaluated together in a single forward pass. But if we want to evaluate derivatives with respect to $x_{2}$ then we have to run a separate forward pass.
+    \bigbreak
+    In general, if we have a function with $D$ inputs and $K$ outputs then a single pass of forward-mode automatic differentiation produces a single column in the Jacobian matrix. To evaluate the full Jacobian matrix, we need $D$ forward passes. This is very efficient for networks such that $K\gg{}D$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Forward-mode automatic differentiation}
+    \begin{figure}
+        \caption{Evaluation trace diagram for two outputs}
+        \includegraphics{Figure_5.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Reverse-mode automatic differentiation}
+    As with forward mode, we augment each intermediate variable $v_{i}$ with additional variables, in this case called adjoint variables, denoted $\bar{v}_{i}$. For a single output function $f$, we define $\bar{v}_{i}$ as:
+    \begin{equation*}
+        \bar{v}_{i}=\frac{\partial{}f}{\partial{}v_{i}}
+    \end{equation*}
+    Using the chain rule we see that:
+    \begin{equation*}
+        \bar{v}_{i}=\frac{\partial{}f}{\partial{}v_{i}}=\sum_{j\in\mathrm{ch}(i)}\frac{\partial{}f}{\partial{}v_{j}}\frac{\partial{}v_{j}}{\partial{}v_{i}}=\sum_{j\in\mathrm{ch}(i)}\bar{v}_{j}\frac{\partial{}v_{j}}{\partial{}v_{i}}
+    \end{equation*}
+    where $\mathrm{ch}(i)$ denotes the children of node $i$ in the evaluation trace diagram.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Reverse-mode automatic differentiation}
+    Working on the previous example again, we see that:
+    \begin{align*}
+        \bar{v}_{7}&=1&\bar{v}_{6}&=\frac{\partial{}v_{7}}{\partial{}v_{6}}\bar{v}_{7}=\bar{v}_{7} \\
+        \bar{v}_{5}&=\frac{\partial{}v_{7}}{\partial{}v_{5}}\bar{v}_{7}=\bar{v}_{7}&\bar{v}_{4}&=\frac{\partial{}v_{6}}{\partial{}v_{4}}\bar{v}_{6}=-\bar{v}_{6} \\
+        \bar{v}_{3}&=\frac{\partial{}v_{5}}{\partial{}v_{3}}\bar{v}_{5}+\frac{\partial{}v_{6}}{\partial{}v_{3}}\bar{v}_{6}=\bar{v}_{5}\exp(v_{3})+\bar{v}_{6} \\
+        \bar{v}_{2}&=\frac{\partial{}v_{3}}{\partial{}v_{2}}\bar{v}_{3}+\frac{\partial{}v_{4}}{\partial{}v_{2}}\bar{v}_{4}=v_{1}\bar{v}_{3}+\bar{v}_{4}\cos{}v_{2}&\bar{v}_{1}&=\frac{\partial{}v_{3}}{\partial{}v_{1}}\bar{v}_{3}=v_{2}\bar{v}_{3}
+    \end{align*}
+    In general, if we have a function with $D$ inputs and $K$ outputs then a single pass of reverse-mode automatic differentiation produces a single row in the Jacobian matrix. To evaluate the full Jacobian matrix, we need $K$ reverse passes.
+\end{frame}
+
 \end{document}
