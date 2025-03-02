@@ -1,0 +1,96 @@
+\documentclass{beamer}
+
+\usepackage{amsmath}
+
+\usetheme{AnnArbor}
+\usecolortheme{crane}
+\usefonttheme[onlymath]{serif}
+
+\title{Deep Learning - Foundations and Concepts}
+\subtitle{Chapter 9. Regularization}
+\author{nonlineark@github}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Inductive Bias}
+
+\begin{frame}
+    \frametitle{Inverse problems}
+    \begin{itemize}
+        \item Most machine learning tasks are examples of inverse problems:
+        \begin{itemize}
+            \item Forward problem: Given a conditional distribution $p(t|x)$ along with a finite set of input points $\{x_{1},\hdots,x_{N}\}$, sample corresponding values $\{t_{1},\hdots,t_{N}\}$ from that distribution.
+            \item Inverse problem: Infer a distribution given only a finite number of samples.
+        \end{itemize}
+        \item We need a way to choose a specific distribution from amongst the infinitely many possibilities. The preference for one choice over others is called inductive bias or prior knowledge:
+        \begin{itemize}
+            \item Small changes in the input values should lead to small changes in the output values: The sum-of-squares regularizer.
+            \item When detecting objects in images, there should be translation invariance: Convolutional neural network.
+            \item Additional data from a different, but related, task can be used to help determine the learnable parameters in a neural network: Transfer learning and multi-task learning.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{No free lunch theorem}
+    The no free lunch theorem: Every learning algorithm is as good as any other when averaged over all possible problems:
+    \begin{itemize}
+        \item Even very flexible neural networks contain important inductive biases, it is not possible to learn purely from data in the absence of any bias.
+        \item In trying to find general-purpose learning algorithms, we are really seeking inductive biases that are appropriate to the broad classes of applications that will be encountered in practice.
+        \item Inductive biases can be incorporated through:
+        \begin{itemize}
+            \item The form of distribution.
+            \item The addition of a regularization term to the error function used during training.
+            \item The training process.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Symmetry and invariance}
+    \begin{itemize}
+        \item In many applications of machine learning, the predictions should be unchanged under one or more transformations of the input variables:
+        \begin{itemize}
+            \item Translation invariance.
+            \item Scale invariance.
+        \end{itemize}
+        \item Transformations that leave particular properties unchanged represent symmetries. The set of all transformations corresponding to a particular symmetry form a group.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Symmetry and invariance}
+    Efficient approaches for encouraging an adaptive model to exhibit the required invarances:
+    \begin{itemize}
+        \item Pre-processing: Invariances are built into a pre-processing stage by computing features of the data that are invariant under the required transformations.
+        \item Regularized error function: A regularization term is added to the error function to penalize changes in the model output when the input is subject to one of the invariant transformations.
+        \item Data augmentation: The training set is expanded using replicas of the training data points, transformed according to the desired invariances and carrying the same output target values as the untransformed examples.
+        \item Network architecture: The invariance properties are built into the structure of a neural network through an appropriate choice of network architecture.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Equivariance}
+    A generalization of invariance is called equivariance in which the output of the network, instead of remaining constant when the input is transformed, is itself transformed in a specific way:
+    \begin{equation*}
+        \mathcal{S}(\mathcal{T}(I))=\tilde{\mathcal{T}}(\mathcal{S}(I))
+    \end{equation*}
+    For example:
+    \begin{itemize}
+        \item $\mathcal{S}$: Measures the orientation of an object within an image.
+        \item $\mathcal{T}$: Rotation.
+        \item $\tilde{\mathcal{T}}$: Increase or decrease the scalar orientation.
+    \end{itemize}
+\end{frame}
+
+\end{document}
