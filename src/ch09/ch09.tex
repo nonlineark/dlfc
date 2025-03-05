@@ -253,4 +253,165 @@
     \end{itemize}
 \end{frame}
 
+\section{Parameter Sharing}
+
+\begin{frame}
+    \frametitle{Parameter sharing}
+    Weight sharing (parameter sharing or parameter tying):
+    \begin{itemize}
+        \item Impose hard constraints on the weights by forming them into groups and requiring that all weights within each group share the same value.
+        \item Because the number of degrees of freedom is smaller than the number of connections in the network, weight sharing reduces network complexity.
+        \item Parameter sharing is extensively used in convolutional neural networks.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Soft weight sharing}
+    We can encourage the weight values to form several groups by considering a probability distribution that is a mixture of Gaussians:
+    \begin{equation*}
+        p(w)=\prod_{i}\sum_{k=1}^{K}\pi_{k}\mathcal{N}(w_{i};\mu_{k},\sigma^{2}_{k})
+    \end{equation*}
+    where $K$ is the number of components in the mixture. Taking the negative logarithm then leads to a regularization function of the form:
+    \begin{equation*}
+        \Omega(w)=-\sum_{i}\log\sum_{k=1}^{K}\pi_{k}\mathcal{N}(w_{i};\mu_{k},\sigma^{2}_{k})
+    \end{equation*}
+    The total error function is then given by:
+    \begin{equation*}
+        \tilde{E}(w)=E(w)+\lambda\Omega(w)
+    \end{equation*}
+    where $\lambda$ is the regularization coefficient.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Soft weight sharing}
+    The error $\tilde{E}(w)$ is minimized jointly with respect to the weights $\{w_{i}\}$ and with respect to the parameters $\{\pi_{k},\mu_{k},\sigma_{k}\}$ of the mixture model, which requires that we evaluate the derivatives of $\Omega(w)$ with respect to all the learnable parameters.
+    \bigbreak
+    First, let's introduce:
+    \begin{equation*}
+        \gamma_{k}(w_{i})=\frac{\pi_{k}\mathcal{N}(w_{i};\mu_{k},\sigma^{2}_{k})}{\sum_{j}\pi_{j}\mathcal{N}(w_{i};\mu_{j},\sigma^{2}_{j})}
+    \end{equation*}
+    We could understand $\gamma_{k}(w_{i})$ this way:
+    \begin{itemize}
+        \item $\pi_{k}$ is the prior for the $k$th component $\mathcal{C}_{k}$: $\pi_{k}=p(\mathcal{C}_{k})$.
+        \item $\mathcal{N}(w_{i};\mu_{k},\sigma^{2}_{k})=p(w_{i}|\mathcal{C}_{k})$.
+        \item Then $\gamma_{k}(w_{i})$ is the posterior for $\mathcal{C}_{k}$: $\gamma_{k}(w_{i})=p(\mathcal{C}_{k}|w_{i})$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Soft weight sharing}
+    Now let's calculate the derivatives:
+    \begin{align*}
+        \frac{\partial\tilde{E}}{\partial{}w_{i}}&=\frac{\partial{}E}{\partial{}w_{i}}+\lambda\sum_{k}\gamma_{k}(w_{i})\frac{w_{i}-\mu_{k}}{\sigma^{2}_{k}} \\
+        \pi_{k}&=\frac{\exp(\eta_{k})}{\sum_{j}\exp(\eta_{j})}\qquad\frac{\partial\tilde{E}}{\partial\eta_{k}}=\lambda\sum_{i}(\pi_{k}-\gamma_{k}(w_{i})) \\
+        \frac{\partial\tilde{E}}{\partial\mu_{k}}&=\lambda\sum_{i}\gamma_{k}(w_{i})\frac{\mu_{k}-w_{i}}{\sigma^{2}_{k}} \\
+        \sigma^{2}_{k}&=\exp(\xi_{k})\qquad\frac{\partial\tilde{E}}{\partial\xi_{k}}=\frac{\lambda}{2}\sum_{i}\gamma_{k}(w_{i})(1-\frac{(w_{i}-\mu_{k})^{2}}{\sigma^{2}_{k}})
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Soft weight sharing}
+    When minimizing $\tilde{E}(w)$, we are driving all the derivatives towards zero. We see that each $w_{i}$ is pulled towards the center of the $k$th Gaussian, with a force proportional to the posterior probability of that Gaussian for $w_{i}$. And for $\{\pi_{k},\mu_{k},\sigma_{k}\}$:
+    \begin{align*}
+        \pi_{k}&\to\frac{1}{W}\sum_{i}\gamma_{k}(w_{i}) \\
+        \mu_{k}&\to\frac{\sum_{i}\gamma_{k}(w_{i})w_{i}}{\sum_{i}\gamma_{k}(w_{i})} \\
+        \sigma^{2}_{k}&\to\frac{\sum_{i}\gamma_{k}(w_{i})(w_{i}-\mu_{k})^{2}}{\sum_{i}\gamma_{k}(w_{i})}
+    \end{align*}
+\end{frame}
+
+\section{Residual Connections}
+
+\begin{frame}
+    \frametitle{Shattered gradients}
+    \begin{itemize}
+        \item The representational capabilities of neural networks increase exponentially with depth. With $\mathrm{ReLU}$ activation functions, there is an exponential increase in the number of linear regions that the network can represent.
+        \item However, a consequence of this is a proliferation of discontinuities in the gradient of the error function.
+    \end{itemize}
+    \begin{figure}
+        \caption{Jacobian for networks with a single input and a single output}
+        \includegraphics[width=0.8\textwidth]{Figure_12.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Residual connections}
+    An important modification to the architecture of neural networks that greatly assists in training very deep networks is that of residual connections, which consist simply of adding the input to each function back onto the output:
+    \begin{align*}
+        z_{1}&=F_{1}(x)&z_{1}&=F_{1}(x)+x \\
+        z_{2}&=F_{2}(z_{1})&z_{2}&=F_{2}(z_{1})+z_{1} \\
+        y&=F_{3}(z_{2})&y&=F_{3}(z_{2})+z_{2}
+    \end{align*}
+    The gradients in a network with residual connections are much less sensitive to input values compared to a standard deep network. The effect of the residual connections is to create smoother error function surfaces, because the error surfaces are moderated by a combination of shallow and deep sub-networks.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Residual connections}
+    \begin{figure}
+        \caption{A residual network and its expanded form}
+        \includegraphics[width=0.8\textwidth]{Figure_13.pdf}
+        \includegraphics[width=0.8\textwidth]{Figure_15.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Residual connections}
+    \begin{figure}
+        \caption{Two alternative ways to include residual connections into a standard feed-forward network}
+        \includegraphics[width=0.8\textwidth]{Figure_16_a.pdf}
+        \includegraphics[width=0.8\textwidth]{Figure_16_b.pdf}
+    \end{figure}
+\end{frame}
+
+\section{Model Averaging}
+
+\begin{frame}
+    \frametitle{Model averaging}
+    If we have several different models trained to solve the same problem, we can often improve generalization by averaging the predictions made by the individual models. Consider a regression problem, suppose:
+    \begin{itemize}
+        \item We have a set of trained models: $y_{1}(x),\hdots,y_{M}(x)$.
+        \item The true function that we are trying to predict is given by $h(x)$.
+        \item The output of each of the models can be written as the true value plus an error: $y_{m}(x)=h(x)+\epsilon_{m}(x)$.
+        \item We form a committee model given by: $y_{\textrm{COM}}(x)=\frac{1}{M}\sum_{m=1}^{M}y_{m}(x)$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Model averaging}
+    Further, let's suppose that:
+    \begin{itemize}
+        \item The errors have zero mean: $E(\epsilon_m(x))=0$.
+        \item Errors from different models are uncorrelated.
+    \end{itemize}
+    If we calculate the expected error from the committee, we see that:
+    \begin{align*}
+        E_{\textrm{COM}}&=E((y_{\textrm{COM}}(x)-h(x))^{2})=E((\frac{1}{M}\sum_{m=1}^{M}y_{m}(x)-h(x))^{2}) \\
+        &=E((\frac{1}{M}\sum_{m=1}^{M}\epsilon_{m}(x))^{2})=\frac{1}{M^{2}}\sum_{m=1}^{M}E(\epsilon^{2}_m(x)) \\
+        &=\frac{1}{M}(\frac{1}{M}\sum_{m=1}^{M}E((y_{m}(x)-h(x))^{2}))=\frac{1}{M}E_{\textrm{AV}}
+    \end{align*}
+    where $E_{\textrm{AV}}$ is the average error made by the models acting individually.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Dropout}
+    \begin{itemize}
+        \item The central idea of dropout is to delete nodes from the network, including their connections, at romdom during training.
+        \item Dropout is applied to both hidden nodes and input nodes, but not outputs.
+        \item It can be implemented by defining a mask vector $R_{i}\in\{0,1\}$ which multiplies the activation of the non-output node $i$, whose values are set to $1$ with probability $\rho$.
+        \item $\rho=0.5$ seems to work well for the hidden nodes, whereas for the inputs a value of $\rho=0.8$ is typically used.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Dropout}
+    Once training is complete, predictions can in principle be made by:
+    \begin{equation*}
+        p(y|x)=\sum_{R}p(R)p(y|x,R)
+    \end{equation*}
+    where the sum is over the exponentially large space of masks, and $p(y|x,R)$ is the predictive distribution from the network with mask $R$.
+    \begin{itemize}
+        \item This summation is intractable, and in practice, as few as $10$ or $20$ masks can be sufficient to obtain good results. This procedure is known as Monte Carlo dropout.
+        \item A simpler approach is to make predictions using the trained network with no nodes masked out. The weights in the network need to be re-scaled to compensate for the fact that in training a proportion of the nodes would be missing.
+    \end{itemize}
+\end{frame}
+
 \end{document}
