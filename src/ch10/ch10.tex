@@ -1,0 +1,53 @@
+\documentclass{beamer}
+
+\usepackage{amsmath}
+
+\usetheme{AnnArbor}
+\usecolortheme{crane}
+\usefonttheme[onlymath]{serif}
+
+\title{Deep Learning - Foundations and Concepts}
+\subtitle{Chapter 10. Convolutional Networks}
+\author{nonlineark@github}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Computer Vision}
+
+\begin{frame}
+    \frametitle{Computer vision}
+    \begin{itemize}
+        \item Computer vision was one of the first fields to be transformed by the deep learning revolution, predominantly thanks to the CNN architecture.
+        \item Recently alternative architectures based on transformers have become competitive with convolutional networks in some applications.
+        \item Some applications for machine learning in computer vision: Classification, detection, segmentation, caption generation, synthesis, inpainting, style transfer, super-resolution, depth prediction, scene reconstruction.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Image data}
+    \begin{itemize}
+        \item The structure of an image:
+        \begin{itemize}
+            \item An image comprises a rectangular array of pixels.
+            \item Each pixel has either a grey-scale intensity or a triplet of red, green and blue channels each with its own intensity value.
+        \end{itemize}
+        \item Challenges of applying neural networks to image data:
+        \begin{itemize}
+            \item Images generally have a high dimensionality.
+            \item Image data is highly structured.
+        \end{itemize}
+        \item Local correlations can be used to encode strong inductive biases into a neural network, leading to models with far fewer parameters and with much better generalization accuracy.
+    \end{itemize}
+\end{frame}
+
+\end{document}
