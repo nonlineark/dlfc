@@ -329,4 +329,98 @@
     \end{figure}
 \end{frame}
 
+\section{Object Detection}
+
+\begin{frame}
+    \frametitle{Bounding boxes}
+    \begin{itemize}
+        \item When there are multiple objects in an image, we may want to detect the presence and class of each object as well as their locations.
+        \item The location of an object in an image is usually defined by a bounding box: $b=(b_{x},b_{y},b_{W},b_{H})$, where $(b_{x},b_{y})$ is the coordinates of the center of the bounding box, and $b_{W}$ and $b_{H}$ its width and height.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Intersection-over-union}
+    \begin{itemize}
+        \item We need a meaningful way to measure the performance of a trained network that can predict bounding boxes.
+        \item Intersection-over-union (IoU) is the ratio of the area of the intersection of the predicted bounding box and the ground truth bounding box to that of their union:
+        \begin{itemize}
+            \item IoU lies in the range $[0,1]$.
+            \item Predictions can be labelled as correct if the IoU exceeds a threshold, which is typically set at $0.5$.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sliding windows}
+    The sliding window way of object detection and object localization:
+    \begin{itemize}
+        \item Create a training set consisting of tightly cropped examples of the object to be detected, as well as examples of similarly cropped sections of images that do not contain any object (the background class).
+        \item Train a classifier (e.g., a deep CNN) using the data set, whose outputs represent the probability of there being an object of each particular class in the input window.
+        \item Scan an input window across the image and, for each location, taking the resulting subset of the image as input to the classifier.
+        \item When an object is detected with high probability, the associated window location then defines the corresponding bounding box.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sliding windows}
+    Potential drawbacks of the sliding window solution:
+    \begin{itemize}
+        \item It can be computationally very costly due to the large number of potential window positions in the image.
+        \begin{itemize}
+            \item Cost can be saved by moving the input window in strides across the image.
+            \item There is a trade-off between precision of location using a small stride and reducing the computational cost by using a larger stride.
+        \end{itemize}
+        \item The process may have to be repeated using windows of various scales to allow for different sizes of object within the image.
+    \end{itemize}
+    Fortunately, it is remarkably simple to implement sliding windows efficiently in a convolutional network.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sliding windows}
+    \begin{figure}
+        \caption{Example of a simple convolutional network}
+        \includegraphics[height=0.7\textheight]{Figure_22.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sliding windows}
+    \begin{figure}
+        \caption{Application of the network to a larger image}
+        \includegraphics[height=0.7\textheight]{Figure_23.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Detection across scales}
+    We still need to solve the problem of detecting objects at different scales and at different aspect ratios:
+    \begin{itemize}
+        \item {[No]} Use multiple detectors with different sizes and shapes of input window.
+        \item {[Yes]} Use a fixed input window and to make multiple copies of the input image each with a different pair of horizontal and vertical scaling factors.
+        \item The associated scaling factors are then used to transform the bounding box coordinates back into the original image space.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Non-max suppression}
+    By scanning a trained convolutional network over an image, it is possible to produce multiple detections of the same object at similar locations. This can be addressed using non-max suppression. For each object class:
+    \begin{enumerate}
+        \item Run the sliding window over the whole image and evaluates the probability of an object of that class being present at each location.
+        \item Elimiate all the associated bounding boxes whose probability is below some threshold.
+        \item The box with the highest probability is considered to be a successful detection, and the corresponding bounding box is recorded as a prediction.
+        \item Any other boxes whose IoU with the successful detection box exceeds some threshold is discarded.
+        \item Go to step 3 and repeat until all bounding boxes have either been discarded or declared as successful detections.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Fast region CNNs}
+    Instead of applying the full power of a deep convolutional network to all areas of the image, we can apply some form of computationally cheaper technique to identify parts of the image where there is a higher probability of finding an object, and then apply the full network only to these areas:
+    \begin{itemize}
+        \item Fast region proposals with CNN (fast R-CNN).
+        \item Use a region proposal convolutional network to identify the most promising regions: faster R-CNN.
+    \end{itemize}
+\end{frame}
+
 \end{document}
