@@ -423,4 +423,103 @@
     \end{itemize}
 \end{frame}
 
+\section{Image Segmentation}
+
+\begin{frame}
+    \frametitle{Convolutional segmentation}
+    Semantic segmentation: Every pixel of an image is assigned to one of a predefined set of classes.
+    \begin{itemize}
+        \item Create a CNN in which each layer has the same dimensionality as the input image:
+        \begin{itemize}
+            \item Stride $1$ at each layer.
+            \item Same padding.
+            \item No pooling.
+        \end{itemize}
+        \item Each output unit has a softmax activation function with weights that are shared across all outputs.
+        \item Such a network would still need many layers, with multiple channels in each layer, and overall this would be prohibitively costly for images of reasonable resolution.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Up-sampling}
+    We can create a more efficient architecture for semantic segmentation by taking a standard deep convolutional network and adding additional learnable layers that take the low-dimensional internal representation and transform it back up to the original image resolution.
+    \begin{figure}
+        \caption{Illustration of a CNN used for semantic image segmentation}
+        \includegraphics[width=0.8\textwidth]{Figure_27.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Up-sampling}
+    To reverse the down-sampling effects of average pooling, we can copy over each input value into all the corresponding output units.
+    \begin{figure}
+        \caption{Unpooling operation for average pooling}
+        \includegraphics{Figure_28_a.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Up-sampling}
+    To reverse the down-sampling effects of max-pooling, we can copy the input value into the first unit of the corresponding output block, and the remaining values in each block are set to zero.
+    \begin{figure}
+        \caption{Unpooling operation for max-pooling}
+        \includegraphics{Figure_28_b.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Up-sampling}
+    Or we can:
+    \begin{itemize}
+        \item Choose a network architecture in which each max-pooling down-sampling layer has a corresponding up-sampling layer later in the network.
+        \item During down-sampling, a record is kept of which element in each block had the maximum value.
+        \item In the corresponding up-sampling layer, the non-zero element is chosen to have the same location.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Up-sampling}
+    \begin{figure}
+        \caption{Unpooling operation for max-pooling, with spatial information kept}
+        \includegraphics[width=0.8\textwidth]{Figure_29.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Fully convolutional networks}
+    We can also use a learned up-sampling, which is the reverse of strided convolution:
+    \begin{itemize}
+        \item Use a filter that connects one pixel in the input array to a patch in the output array.
+        \item Choose an architecture so that as we move one step across the input array, we move two or more steps across the output array.
+        \item If there are output cells for which multiple filter positions overlap, we can calculate the output values by summing or by averaging the contributions from the individual filter positions.
+    \end{itemize}
+    If we have a network architecture with no pooling layers, so that the down-sampling and up-sampling are done purely using convolutions, then the architecture is known as a fully convolutional network.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Fully convolutional networks}
+    \begin{figure}
+        \caption{Illustration of transpose convolution}
+        \includegraphics[height=0.7\textheight]{Figure_30.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The U-net architecture}
+    To maintain the spatial information discarded during down-sampling, we can use the U-net architecture:
+    \begin{itemize}
+        \item For each down-sampling layer there is a corresponding up-sampling layer.
+        \item The final set of channel activations at each down-sampling layer is concatenated with the corresponding first set of channels in the up-sampling layer.
+        \item $1\times{}1$ convolutions may be used in the final layer of a U-net to reduce the number of channels down to the number of classes.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The U-net architecture}
+    \begin{figure}
+        \caption{The U-net architecture}
+        \includegraphics[width=0.8\textwidth]{Figure_31.pdf}
+    \end{figure}
+\end{frame}
+
 \end{document}
