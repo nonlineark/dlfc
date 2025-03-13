@@ -522,4 +522,51 @@
     \end{figure}
 \end{frame}
 
+\section{Style Transfer}
+
+\begin{frame}
+    \frametitle{Style transfer}
+    Neural style transfer: Generate a synthetic image $G$ whose content is defined by an image $C$ and whose style is taken from some other image $S$. This is achieved by defining an error function $E(G)$ given by the sum of two terms:
+    \begin{equation*}
+        E(G)=E_{\textrm{content}}(G,C)+E_{\textrm{style}}(G,S)
+    \end{equation*}
+    We can then find $G$ by starting from a randomly initialized image and using gradient descent to minimize $E(G)$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Style transfer}
+    To define $E_{\textrm{content}}(G,C)$:
+    \begin{itemize}
+        \item Pick a particular convolutional layer in the network.
+        \item Measure the activations of the units in that layer when image $G$ is used as input and also when image $C$ is used as input.
+    \end{itemize}
+    We can then encourage the corresponding pre-activations to be similar by using a sum-of-squares error function of the form:
+    \begin{equation*}
+        E_{\textrm{content}}(G,C)=\sum_{i,j,k}(a_{ijk}(G)-a_{ijk}(C))^{2}
+    \end{equation*}
+    where $a_{ijk}$ denotes the pre-activation of the unit at position $(i,j)$ in channel $k$ of that layer.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Style transfer}
+    To define $E_{\textrm{style}}(G,S)$, the intuition is that style is determined by the co-occurrence of features from different channels within a convolutional layer. Again consider a particular convolutional layer, we can measure the extent to which a feature in channel $k$ co-occurs with the corresponding feature in channel $k'$:
+    \begin{equation*}
+        F_{kk'}(G)=\sum_{i=1}^{I}\sum_{j=1}^{J}a_{ijk}(G)a_{ijk'}(G)
+    \end{equation*}
+    where $I$ and $J$ are the dimensions of the feature maps in this particular convolutional layer. If there are $K$ channels in this layer, then $F_{kk'}$ form the elements of a $K\times{}K$ matrix, called the style matrix.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Style transfer}
+    We can measure the extent to which the two images $G$ and $S$ have the same style by:
+    \begin{equation*}
+        E_{\textrm{style}}(G,S)=\frac{1}{(2IJK)^{2}}\sum_{k=1}^{K}\sum_{k'=1}^{K}(F_{kk'}(G)-F_{kk'}(S))^{2}
+    \end{equation*}
+    We could obtain more pleasing results by using contributions from multiple layers:
+    \begin{equation*}
+        E_{\textrm{style}}(G,S)=\sum_{l}\lambda_{l}E^{(l)}_{\textrm{style}}(G,S)
+    \end{equation*}
+    where the coefficients $\lambda_{l}$ determine the relative weighting between the different layers.
+\end{frame}
+
 \end{document}
