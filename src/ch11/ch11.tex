@@ -2,6 +2,8 @@
 
 \usepackage{amsmath}
 
+\newcommand{\ind}{\perp\!\!\!\!\perp}
+
 \usetheme{AnnArbor}
 \usecolortheme{crane}
 \usefonttheme[onlymath]{serif}
@@ -227,6 +229,164 @@
         \includegraphics[trim=-1cm 0 -1cm 0]{Figure_13_b.pdf}
         \includegraphics[trim=-1cm 0 0 0]{Figure_13_c.pdf}
     \end{figure}
+\end{frame}
+
+\section{Conditional Independence}
+
+\begin{frame}
+    \frametitle{Conditional independence}
+    Consider three variables $a$, $b$ and $c$, we say that $a$ is conditionally independent of $b$ given $c$ if
+    \begin{equation*}
+        p(a|b,c)=p(a|c)
+    \end{equation*}
+    holds for every possible value of $c$. Equivalently, this can be written as:
+    \begin{equation*}
+        p(a,b|c)=p(a|b,c)p(b|c)=p(a|c)p(b|c)
+    \end{equation*}
+    We will sometimes use a shorthand notation for conditional independence in which
+    \begin{equation*}
+        a\ind{}b|c
+    \end{equation*}
+    denotes that $a$ is conditionally independent of $b$ given $c$. In particular, the notation $a\ind{}b|\emptyset$ denotes that $a$ is independent of $b$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conditional independence}
+    \begin{itemize}
+        \item An important and elegant feature of graphical models is that conditional independence properties of the joint distribution can be read directly from the graph without having to perform any analytical manipulations.
+        \item The general framework for achieving this is called d-separation, where the ``d'' stands for ``directed''.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Three example graphs}
+    \begin{figure}
+        \caption{The first of three examples}
+        \includegraphics[trim=0 0 -1cm 0]{Figure_14.pdf}
+        \includegraphics[trim=-1cm 0 0 0]{Figure_15.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Three example graphs}
+    \begin{itemize}
+        \item The joint distribution is given by: $p(a,b,c)=p(a|c)p(b|c)p(c)$.
+        \begin{itemize}
+            \item Question: Is $a\ind{}b|\emptyset$ true?
+            \item Answer: No, because $p(a,b)=\sum_{c}p(a,b,c)=\sum_{c}p(a|c)p(b|c)p(c)\ne{}p(a)p(b)$.
+            \item Question: Is $a\ind{}b|c$ true?
+            \item Answer: Yes, because $p(a,b|c)=\frac{p(a,b,c)}{p(c)}=p(a|c)p(b|c)$.
+        \end{itemize}
+        \item Consider the path from node $a$ to node $b$ via $c$:
+        \begin{itemize}
+            \item The node $c$ is said to be tail-to-tail with respect to this path.
+            \item The presence of such a path connecting nodes $a$ and $b$ causes these nodes to be dependent.
+            \item The conditioned node blocks the path from $a$ to $b$ and causes $a$ and $b$ to become conditionally independent.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Three example graphs}
+    \begin{figure}
+        \caption{The second of three examples}
+        \includegraphics[trim=0 0 -1cm 0]{Figure_16.pdf}
+        \includegraphics[trim=-1cm 0 0 0]{Figure_17.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Three example graphs}
+    \begin{itemize}
+        \item The joint distribution is given by: $p(a,b,c)=p(a)p(b|c)p(c|a)$.
+        \begin{itemize}
+            \item Question: Is $a\ind{}b|\emptyset$ true?
+            \item Answer: No, because $p(a,b)=\sum_{c}p(a,b,c)=\sum_{c}p(a)p(b|c)p(c|a)\ne{}p(a)p(b)$.
+            \item Question: Is $a\ind{}b|c$ true?
+            \item Answer: Yes, because $p(a,b|c)=\frac{p(a,b,c)}{p(c)}=p(a|c)p(b|c)$.
+        \end{itemize}
+        \item Consider the path from node $a$ to node $b$ via $c$:
+        \begin{itemize}
+            \item The node $c$ is said to be head-to-tail with respect to this path.
+            \item The presence of such a path connecting nodes $a$ and $b$ causes these nodes to be dependent.
+            \item The conditioned node blocks the path from $a$ to $b$ and causes $a$ and $b$ to become conditionally independent.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Three example graphs}
+    \begin{figure}
+        \caption{The third of three examples}
+        \includegraphics[trim=0 0 -1cm 0]{Figure_18.pdf}
+        \includegraphics[trim=-1cm 0 0 0]{Figure_19.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Three example graphs}
+    \begin{itemize}
+        \item The joint distribution is given by: $p(a,b,c)=p(a)p(b)p(c|a,b)$.
+        \begin{itemize}
+            \item Question: Is $a\ind{}b|\emptyset$ true?
+            \item Answer: Yes, because $p(a,b)=\sum_{c}p(a,b,c)=\sum_{c}p(a)p(b)p(c|a,b)=p(a)p(b)$.
+            \item Question: Is $a\ind{}b|c$ true?
+            \item Answer: No, because $p(a,b|c)=\frac{p(a,b,c)}{p(c)}\ne{}p(a|c)p(b|c)$.
+        \end{itemize}
+        \item Consider the path from node $a$ to node $b$ via $c$:
+        \begin{itemize}
+            \item The node $c$ is said to be head-to-head with respect to this path.
+            \item When node $c$ is unobserved, it blocks the path, and the variables $a$ and $b$ are independent.
+            \item Conditioning on $c$ unblocks the path and renders $a$ and $b$ dependent. In fact, a head-to-head path will become unblocked if either the node, or any of its descendants, is observed.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Explaining away}
+    To understand further the unusual behavior of the third example, consider three binary random variables relating to the fuel system on a car:
+    \begin{itemize}
+        \item $B$: The state of a battery that is either charged ($B=1$) or flat ($B=0$).
+        \item $F$: The state of the fuel tank that is either full of fuel ($F=1$) or empty ($F=0$).
+        \item $G$: The state of an electric fuel gauge and which indicates that the fuel tank is either full ($G=1$) or empty ($G=0$).
+    \end{itemize}
+    \begin{figure}
+        \includegraphics{Figure_20.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Explaining away}
+    And here is the probability table:
+    \begin{align*}
+        &p(B=1)=0.9 \\
+        &p(F=1)=0.9 \\
+        &p(G=1|F=1,B=1)=0.8 \\
+        &p(G=1|F=1,B=0)=0.2 \\
+        &p(G=1|F=0,B=1)=0.2 \\
+        &p(G=1|F=0,B=0)=0.1
+    \end{align*}
+    Let's calculate $p(F=0|G=0)$ and $p(F=0|G=0,B=0)$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Explaining away}
+    \begin{align*}
+        p(F=0)&=0.1 \\
+        p(F=0|G=0)&=\frac{p(F=0,G=0)}{p(G=0)} \\
+        &=\frac{0.072+0.009}{0.162+0.072+0.072+0.009}=\frac{9}{35}\approx{}0.257 \\
+        p(F=0|G=0,B=0)&=\frac{p(F=0,G=0,B=0)}{p(G=0,B=0)} \\
+        &=\frac{0.009}{0.072+0.009}=\frac{1}{9}\approx{}0.111
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Explaining away}
+    \begin{itemize}
+        \item We see that $p(F=0|G=0)\ne{}p(F=0|G=0,B=0)$, which means, when $G$ is observed, $F$ and $B$ are indeed dependent.
+        \item This accords with our intuition that finding that the battery is flat explains away the observation that the fuel gauge reads empty.
+        \item In fact, this would also be the case if, instead of observing the fuel gauge directly, we observed the state of some descendant of $G$, for example a rather unreliable witness who reports seeing that the gauge was reading empty.
+    \end{itemize}
 \end{frame}
 
 \end{document}
