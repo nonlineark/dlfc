@@ -389,4 +389,78 @@
     \end{itemize}
 \end{frame}
 
+\begin{frame}
+    \frametitle{D-separation}
+    Consider a general directed graph in which $A$, $B$ and $C$ are arbitrary non-intersecting sets of nodes. To determine whether a particular conditional independence statement $A\ind{}B|C$ is true, we consider all possible paths from any node in $A$ to any node in $B$. Any such path is said to be blocked if it includes a node such that either:
+    \begin{itemize}
+        \item The arrows on the path meet either head-to-tail or tail-to-tail at the node, and the node is in the set $C$.
+        \item The arrows meet head-to-head at the node and neither the node, nor any of its descendants is in the set $C$.
+    \end{itemize}
+    If all paths are blocked, then $A$ is said to be d-separated from $B$ by $C$, and the joint distribution over all the variables in the graph will satisfy $A\ind{}B|C$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Naive Bayes}
+    Suppose we wish to assign values of $x$ to one of $K$ classes. The key assumption of the naive Bayes model is that, conditioned on the class $\mathcal{C}_{k}$, the distribution of the input variable factorizes into the product of two or more densities. Suppose we partition $x$ into $L$ elements $x=(x^{(1)},\hdots,x^{(L)})$, naive Bayes then takes the form:
+    \begin{equation*}
+        p(x|\mathcal{C}_{k})=\prod_{l=1}^{L}p(x^{(l)}|\mathcal{C}_{k})
+    \end{equation*}
+    It is assumed that this holds for each of the classes $\mathcal{C}_{k}$ separately.
+    \begin{figure}
+        \includegraphics{Figure_22.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Generative models}
+    \begin{itemize}
+        \item Discriminative model: Take an image as input and generate outputs that describe the object's class, position and scale.
+        \item Generative model: Select values for object's class, postion and scale from the learned prior distributions and then subsequently sampling an image from the learned conditional distribution.
+    \end{itemize}
+    \begin{figure}
+        \includegraphics{Figure_24.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Markov blanket}
+    Consider a joint distribution $p(x_{1},\hdots,x_{D})$ represented by a directed graph having $D$ nodes, and consider the conditional distribution of a particular node $x_{i}$ conditioned on all the remaining nodes $x_{j\ne{}i}$:
+    \begin{equation*}
+        p(x_{i}|x_{j\ne{}i})=\frac{p(x_{1},\hdots,x_{D})}{\int{}p(x_{1},\hdots,x_{D})\mathrm{d}x_{i}}=\frac{\prod_{d=1}^{D}p(x_{d}|\mathrm{pa}(d))}{\int\prod_{d=1}^{D}p(x_{d}|\mathrm{pa}(d))\mathrm{d}x_{i}}
+    \end{equation*}
+    The only factors that remain will be:
+    \begin{itemize}
+        \item $p(x_{i}|\mathrm{pa}(i))$.
+        \item $p(x_{d}|\mathrm{pa}(d))$ if $i\in\mathrm{pa}(d)$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Markov blanket}
+    We can think of the Markov blanket of a node $x_{i}$ as being the minimal set of nodes that isolates $x_{i}$ from the rest of the graph, which comprises of:
+    \begin{itemize}
+        \item The parents, from factor $p(x_{i}|\mathrm{pa}(i))$.
+        \item The children, from factor $p(x_{d}|\mathrm{pa}(d))$.
+        \item The co-parents, from factor $p(x_{d}|\mathrm{pa}(d))$.
+    \end{itemize}
+    \begin{figure}
+        \includegraphics{Figure_25.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Graphs as filters}
+    A directed graph:
+    \begin{itemize}
+        \item Represents a specific decomposition of a joint probability distribution into a product of conditional probabilities.
+        \item Expresses a set of conditional independence statements obtained through the d-separation criterion.
+    \end{itemize}
+    These two properties are equivalent. If we present to the graph the set of all possible distributions $p(x)$:
+    \begin{itemize}
+        \item Graph as a joint distribution filter: The subset of distributions that can be expressed in terms of the factorization implied by the graph is denoted $\mathcal{DF}_{1}$.
+        \item Graph as a conditional independence filter: The subset of distributions that satisfy all the conditional independence properties obtained by applying the d-separation criterion to the graph is denoted $\mathcal{DF}_{2}$.
+    \end{itemize}
+    Then the d-separation theorem tells us that $\mathcal{DF}_{1}=\mathcal{DF}_{2}$.
+\end{frame}
+
 \end{document}
