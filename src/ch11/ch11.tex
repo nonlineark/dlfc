@@ -463,4 +463,85 @@
     Then the d-separation theorem tells us that $\mathcal{DF}_{1}=\mathcal{DF}_{2}$.
 \end{frame}
 
+\section{Sequence Models}
+
+\begin{frame}
+    \frametitle{Sequence models}
+    There are many important applications of machine learning in which the data consists of a sequence of values:
+    \begin{itemize}
+        \item Speech recognition.
+        \item Automatic translation between languages.
+        \item Detecting genes in DNA.
+        \item Synthesizing music.
+        \item Writing computer code.
+        \item Holding a conversation with a modern search engine.
+    \end{itemize}
+    We will denote a data sequence by $x_{1},\hdots,x_{N}$ where each element $x_{n}$ of the sequence comprises a vector of values.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequence models}
+    Autoregressive model:
+    \begin{equation*}
+        p(x_{1},\hdots,x_{N})=\prod_{n=1}^{N}p(x_{n}|x_{1},\hdots,x_{n-1})
+    \end{equation*}
+    \begin{figure}
+        \includegraphics{Figure_27.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequence models}
+    \begin{equation*}
+        p(x_{1},\hdots,x_{N})=\prod_{n=1}^{N}p(x_{n})
+    \end{equation*}
+    \begin{figure}
+        \includegraphics{Figure_28.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequence models}
+    Markov model, or Markov chain:
+    \begin{equation*}
+        p(x_{1},\hdots,x_{N})=p(x_{1})\prod_{n=2}^{N}p(x_{n}|x_{n-1})
+    \end{equation*}
+    \begin{figure}
+        \includegraphics{Figure_29.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequence models}
+    Second-order Markov model:
+    \begin{equation*}
+        p(x_{1},\hdots,x_{N})=p(x_{1})p(x_{2}|x_{1})\prod_{n=3}^{N}p(x_{n}|x_{n-1},x_{n-2})
+    \end{equation*}
+    \begin{figure}
+        \includegraphics{Figure_30.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Hidden variables}
+    Suppose we wish to build a model for sequences that is:
+    \begin{itemize}
+        \item Not limited by the Markov assumption to any order.
+        \item Can be specified using a limited number of free parameters.
+    \end{itemize}
+    We can achieve this by introducing additional latent variables: For each observation $x_{n}$, we introduce a corresponding latent variable $z_{n}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Hidden variables}
+    State-space model:
+    \begin{equation*}
+        p(x_{1},\hdots,x_{N},z_{1},\hdots,z_{N})=p(z_{1})\prod_{n=2}^{N}p(z_{n}|z_{n-1})\prod_{n=1}^{N}p(x_{n}|z_{n})
+    \end{equation*}
+    \begin{figure}
+        \includegraphics{Figure_31.pdf}
+    \end{figure}
+    Using the d-separation criterion, we see that there is always a path connecting any two observed variables $x_{n}$ and $x_{m}$ via the latent variables and that this path is never blocked. So our predictions for $x_{n+1}$ depend on all previous observations.
+\end{frame}
+
 \end{document}
