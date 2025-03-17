@@ -1,0 +1,123 @@
+\documentclass{beamer}
+
+\usepackage{amsmath}
+
+\usetheme{AnnArbor}
+\usecolortheme{crane}
+\usefonttheme[onlymath]{serif}
+
+\title{Deep Learning - Foundations and Concepts}
+\subtitle{Chapter 12. Transformers}
+\author{nonlineark@github}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Attention}
+
+\begin{frame}
+    \frametitle{Attention}
+    The fundamental concept that underpins a transformer is attention:
+    \begin{itemize}
+        \item This was originally developed as an enhancement to RNNs for machine translation (\href{https://arxiv.org/abs/1409.0473}{Bahdanau, Cho and Bengio, 2014})
+        \item Later, it was found that significantly improved performance could be obtained by eliminating the recurrence structure and instead focusing exclusively on the attention mechanism (\href{https://arxiv.org/abs/1706.03762}{Vaswani et al., 2017}).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Attention}
+    Consider the following two sentences:
+    \begin{itemize}
+        \item I swam across the river to get to the other bank.
+        \item I walked across the road to get cash from the bank.
+    \end{itemize}
+    Here the word ``bank'' has different meanings in the two sentences:
+    \begin{itemize}
+        \item In the first sentence, the words ``swam'' and ``river'' most strongly indicate that ``bank'' refers to the side of a river.
+        \item In the second sentence, the word ``cash'' is a strong indicator that ``bank'' refers to a financial institution.
+    \end{itemize}
+    To determine the appropriate interpretation of ``bank'', a neural network processing such a sentence should:
+    \begin{itemize}
+        \item Attend to specific words from the rest of the sequence.
+        \item The particular locations that should receive more attention depend on the input sequence itself.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Transformer processing}
+    \begin{itemize}
+        \item The input data to a transformer is a set of vectors $\{x_{n}\}$ of dimensionality $D$, where $n=1,\hdots,N$.
+        \item We refer to these data vectors as tokens, and the elements of the tokens are called features.
+        \item We will combine the tokens into a matrix $X$ of dimensions $N\times{}D$ in which the $n$th row comprises the token $x_{n}^{T}$.
+    \end{itemize}
+    \begin{figure}
+        \includegraphics[height=0.4\textheight]{Figure_3.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Transformer processing}
+    The fundamental building block of a transformer is a function that takes a data matrix $X$ as input and creates a transformed matrix $\tilde{X}$ of the same dimensionality as the output:
+    \begin{equation*}
+        \tilde{X}=\mathrm{TransformerLayer}(X)
+    \end{equation*}
+    A single transformer layer itself comprises two stages:
+    \begin{itemize}
+        \item The first stage, which implements the attention mechanism, mixes together the corresponding features from different tokens across the columns of the data matrix.
+        \item The second stage acts on each row independently and transforms the features within each token.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Attention coefficients}
+    Suppose we have a set of input tokens $x_{1},\hdots,x_{N}$ and we want to map this set to another set $y_{1},\hdots,y_{N}$:
+    \begin{itemize}
+        \item $y_{n}$ should depend on all the tokens $x_{1},\hdots,x_{N}$.
+        \item This dependence should be stronger for those tokens $x_{m}$ that are particularly important for determining the modified representation of $y_{n}$.
+    \end{itemize}
+    A simple way to achieve this is to define each output token $y_{n}$ to be a linear combination of the input tokens:
+    \begin{align*}
+        y_{n}&=\sum_{m=1}^{N}a_{nm}x_{m} \\
+        a_{nm}&\ge{}0\qquad\sum_{m=1}^{N}a_{nm}=1
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Self-attention}
+    The problem of determining the attention coefficients can be viewed from an information retrieval perspective:
+    \begin{itemize}
+        \item We could view the vector $x_{n}$ as:
+        \begin{itemize}
+            \item The key for input token $n$.
+            \item The value for input token $n$.
+            \item The query for output token $n$.
+        \end{itemize}
+        \item To measure the similarity between the query $x_{n}$ and the key $x_{m}$, we could use their dot product: $x_{n}^{T}x_{m}$.
+        \item To make sure the attention coefficients define a partition of unity, we could use the $\mathrm{softmax}$ function to transform the dot products.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Self-attention}
+    Dot-product self-attention:
+    \begin{align*}
+        y_{n}&=\sum_{m=1}^{N}a_{nm}x_{m} \\
+        a_{nm}&=\frac{\exp(x_{n}^{T}x_{m})}{\sum_{m'=1}^{N}\exp(x_{n}^{T}x_{m'})}
+    \end{align*}
+    Or write in matrix notation:
+    \begin{equation*}
+        Y=\mathrm{softmax}(XX^{T})X
+    \end{equation*}
+    where $\mathrm{softmax}(L)$ means to apply $\mathrm{softmax}$ to each row of the matrix $L$.
+\end{frame}
+
+\end{document}
