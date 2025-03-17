@@ -1,5 +1,7 @@
 \documentclass{beamer}
 
+\usepackage[ruled]{algorithm2e}
+\SetKw{KwRet}{return}
 \usepackage{amsmath}
 
 \usetheme{AnnArbor}
@@ -57,7 +59,7 @@
     \begin{itemize}
         \item The input data to a transformer is a set of vectors $\{x_{n}\}$ of dimensionality $D$, where $n=1,\hdots,N$.
         \item We refer to these data vectors as tokens, and the elements of the tokens are called features.
-        \item We will combine the tokens into a matrix $X$ of dimensions $N\times{}D$ in which the $n$th row comprises the token $x_{n}^{T}$.
+        \item We will combine the tokens into a matrix $X$ of dimension $N\times{}D$ in which the $n$th row comprises the token $x_{n}^{T}$.
     \end{itemize}
     \begin{figure}
         \includegraphics[height=0.4\textheight]{Figure_3.pdf}
@@ -118,6 +120,104 @@
         Y=\mathrm{softmax}(XX^{T})X
     \end{equation*}
     where $\mathrm{softmax}(L)$ means to apply $\mathrm{softmax}$ to each row of the matrix $L$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Network parameters}
+    The current transformation from input tokens $\{x_{n}\}$ to output tokens $\{y_{n}\}$ has major limitations:
+    \begin{itemize}
+        \item The transformation is fixed and has no capacity to learn from data because it has no adjustable parameters.
+        \item Each of the feature values within a token $x_{n}$ plays an equal role in determining the attention coefficients.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Network parameters}
+    We can overcome these limitations by defining separate query, key and value matrices each having their own independent linear transformations:
+    \begin{itemize}
+        \item $Q=XW^{(q)}$, where $W^{(q)}$ has dimensionality $N\times{}D_{k}$.
+        \item $K=XW^{(k)}$, where $W^{(k)}$ has dimensionality $N\times{}D_{k}$.
+        \item $V=XW^{(v)}$, where $W^{(v)}$ has dimensionality $N\times{}D_{v}$.
+        \item A typical choice is $D_{k}=D$.
+        \item If we set $D_{v}=D$:
+        \begin{itemize}
+            \item This will facilitate the inclusion of residual connections.
+            \item Multiple transformer layers can be stacked on top of each other.
+        \end{itemize}
+    \end{itemize}
+    The dot-product self-attention now takes the form:
+    \begin{equation*}
+        Y=\mathrm{softmax}(QK^{T})V
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Scaled self-attention}
+    \begin{itemize}
+        \item When logits are too large, the $\mathrm{softmax}$ function will produce extremely small gradients, which is not desirable.
+        \item We need to scale the logits before applying the $\mathrm{softmax}$ function.
+        \item Notice that if $q,k\in\mathbb{R}^{D_{k}}$ and the elements of $q$ and $k$ are all independent random numbers with zero mean and unit variance, then $\mathrm{var}(q^{T}k)=D_{k}$. Thus it would be appropriate to scale the logits by the standard deviation $\sqrt{D_{k}}$.
+    \end{itemize}
+    The scaled dot-product self-attention now takes the form:
+    \begin{equation*}
+        Y=\mathrm{Attention}(Q,K,V)=\mathrm{softmax}(\frac{QK^{T}}{\sqrt{D_{k}}})V
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Scaled self-attention}
+    \begin{figure}
+        \caption{Information flow in a scaled dot-product self-attention neural network layer}
+        \includegraphics[height=0.7\textheight]{Figure_6.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Scaled self-attention}
+    \begin{algorithm}[H]
+        \caption{Scaled dot-product self-attention}
+        $Q\gets{}XW^{(q)}$\;
+        $K\gets{}XW^{(k)}$\;
+        $V\gets{}XW^{(v)}$\;
+        \Return{$\mathrm{Attention}(Q,K,V)=\mathrm{softmax}(\frac{QK^{T}}{\sqrt{D_{k}}})V$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Multi-head attention}
+    We can use multiple attention heads in parallel to attend to multiple data-dependent patterns at the same time. Suppose we have $C$ heads:
+    \begin{align*}
+        H_{c}&=\mathrm{Attention}(Q_{c},K_{c},V_{c}) \\
+        &=\mathrm{Attention}(XW^{(q)}_{c},XW^{(k)}_{c},XW^{(v)}_{c})
+    \end{align*}
+    The heads are first concatenated into a single matrix, and the result is then linearly transformed using a matrix $W^{(o)}$ to give a combined output:
+    \begin{equation*}
+        Y=(H_{1},\hdots,H_{C})W^{(o)}
+    \end{equation*}
+    The matrix $W^{(o)}$ has dimension $HD_{v}\times{}D$, so that the final output matrix $Y$ has dimension $N\times{}D$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Multi-head attention}
+    \begin{figure}
+        \caption{Information flow in a multi-head attention layer}
+        \includegraphics[height=0.7\textheight]{Figure_8.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Multi-head attention}
+    \begin{algorithm}[H]
+        \caption{Multi-head attention}
+        \For{$c\gets{}1$ \KwTo $C$}{
+            $Q_{c}=XW^{(q)}_{c}$\;
+            $K_{c}=XW^{(k)}_{c}$\;
+            $V_{c}=XW^{(v)}_{c}$\;
+            $H_{c}=\mathrm{Attention}(Q_{c},K_{c},V_{c})$\;
+        }
+        $H=(H_{1},\hdots,H_{C})$\;
+        \Return{$Y=HW^{(o)}$}\;
+    \end{algorithm}
 \end{frame}
 
 \end{document}
