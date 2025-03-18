@@ -220,4 +220,87 @@
     \end{algorithm}
 \end{frame}
 
+\begin{frame}
+    \frametitle{Transformer layers}
+    To improve training efficiency, we can introduce residual connections and layer normalization:
+    \begin{equation*}
+        Z=\mathrm{LayerNorm}(Y(X)+X)
+    \end{equation*}
+    Or using pre-norm:
+    \begin{equation*}
+        Z=Y(\mathrm{LayerNorm}(X))+X
+    \end{equation*}
+    Until now, the output data matrix $Y$ is still a linear transformation of the input data matrix $X$, and this limits the expressive capabilities of the attention layer. We can enhance the flexibility by post-processing the outputs using a standard nonlinear neural network denoted $\mathrm{MLP}$:
+    \begin{equation*}
+        \tilde{X}=\mathrm{LayerNorm}(\mathrm{MLP}(Z)+Z)
+    \end{equation*}
+    Again, we can use a pre-norm instead:
+    \begin{equation*}
+        \tilde{X}=\mathrm{MLP}(\mathrm{LayerNorm}(Z))+Z
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Transformer layers}
+    \begin{figure}
+        \caption{One layer of the transformer architecture}
+        \includegraphics[height=0.7\textheight]{Figure_9.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Computational complexity}
+    \begin{itemize}
+        \item In the attention layer:
+        \begin{itemize}
+            \item Calculate the matrices $Q$, $K$ and $V$: $\mathcal{O}(ND^{2})$.
+            \item Calculate the dot products $QK^{T}$: $\mathcal{O}(N^{2}D)$.
+            \item Calculate the matrix $Y$: $\mathcal{O}(N^{2}D)$.
+        \end{itemize}
+        \item In the neural network layer:
+        \begin{itemize}
+            \item Calculate the matrix $\tilde{X}$: $\mathcal{O}(ND^{2})$.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Positional encoding}
+    \begin{itemize}
+        \item A transformer is equivariant with respect to input permutations due to the shared matrices $W^{(q)}_{c}$, $W^{(k)}_{c}$, $W^{(v)}_{c}$ and the shared subsequent neural network.
+        \item The lack of dependence on token order becomes a major limitation when we consider sequential data, so we need to find a way to inject token order information into the network.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Positional encoding}
+    The requirements for a positional encoding:
+    \begin{itemize}
+        \item The token order should be encoded in the data itself instead of having to be represented in the network architecture.
+        \item We will construct a position encoding vector $r_{n}$ associated with each input position $n$ and then combine this with the associated input token $x_{n}$:
+        \begin{itemize}
+            \item {[No]} $\tilde{x}_{n}=(x_{n},r_{n})$.
+            \item {[Yes]} $\tilde{x}_{n}=x_{n}+r_{n}$.
+        \end{itemize}
+        \item $r_{n}$ should be bounded.
+        \item $r_{n}$ should generalize well to new input sequences that are longer than those used in training.
+        \item $r_{n}$ should be unique for a given position.
+        \item $r_{n}$ should have a consistent way to express the number of steps between any two input tokens irrespective of their absolute position.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Positional encoding}
+    Positional encoding based on sinusoidal functions:
+    \begin{align*}
+        r_{ni}=\begin{cases}
+            \sin(\frac{n}{L^{\frac{i}{D}}}),\textrm{if $i$ is even} \\
+            \cos(\frac{n}{L^{\frac{i-1}{D}}}),\textrm{if $i$ is odd}
+        \end{cases}
+    \end{align*}
+    \begin{figure}
+        \includegraphics[height=0.5\textheight]{Figure_10_a.pdf}
+    \end{figure}
+\end{frame}
+
 \end{document}
