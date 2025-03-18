@@ -303,4 +303,123 @@
     \end{figure}
 \end{frame}
 
+\section{Natural Language}
+
+\begin{frame}
+    \frametitle{Word embedding}
+    To convert the words into a numerical representation that is suitable for use as the input to a deep neural network:
+    \begin{itemize}
+        \item {[No]} One simple approach is to define a fixed dictionary of words, and use a one hot representation for each word.
+        \item The embedding process can be defined by a matrix $E$ of size $D\times{}K$ where $D$ is the dimensionality of the embedding space and $K$ is the dimensionality of the dictionary. Each column of $E$ represents the embedding of a word.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Word embedding}
+    The word2vec technique:
+    \begin{itemize}
+        \item A training set is constructed in which each sample is obtained by considering a window of $M$ adjacent words in the text, where a typical value might be $M=5$.
+        \item The error function is defined as the sum of the error functions for each sample.
+        \item In continuous bag of words, the target variable for network training is the middle word, and the remaining context words form the inputs.
+        \begin{itemize}
+            \item Once trained, $E$ is given by the transpose of the second-layer weight matrix.
+        \end{itemize}
+        \item In skip-grams, the center word is presented as the input and the target values are the context words.
+        \begin{itemize}
+            \item Once trained, $E$ is given by the first-layer weight matrix.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Word embedding}
+    \begin{figure}
+        \caption{Two-layer neural networks used to learn word embeddings}
+        \includegraphics[width=0.4\textwidth]{Figure_11_a.pdf}
+        \includegraphics[width=0.4\textwidth]{Figure_11_b.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Word embedding}
+    Words that are semantically related are mapped to nearby positions in the embedding space.
+    \bigbreak
+    The learned embedding space often has an even richer semantic structure than just the proximity of related words, and that this allows for simple vector arithmetic:
+    \begin{equation*}
+        v(\textrm{Paris})-v(\textrm{France})\approx{}v(\textrm{Rome})-v(\textrm{Italy})
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Tokenization}
+    \begin{itemize}
+        \item Limitations in word-level representation:
+        \begin{itemize}
+            \item Words not in the dictionary.
+            \item Misspelled words.
+            \item Punctuation symbols or other character sequences such as computer code.
+        \end{itemize}
+        \item Limitations in character-level representation:
+        \begin{itemize}
+            \item The semantically important word structure of language is discarded.
+            \item Requires a much larger number of sequential steps for a given body of text, thereby increasing the computational cost of processing the sequence.
+        \end{itemize}
+        \item We can combine the benefits of character-level and word-level representations by using a pre-processing step that converts a string of words and punctuation symbols into a string of tokens.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Tokenization}
+    \begin{figure}
+        \caption{Tokenizing natural language by analogy with byte pair encoding}
+        \includegraphics{Figure_12.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Bag of words}
+    The bag-of-words model assumes that the words are drawn independently from the same distribution and hence that the joint distribution is fully factorized in the form:
+    \begin{equation*}
+        p(x_{1},\hdots,x_{N})=\prod_{n=1}^{N}p(x_{n})
+    \end{equation*}
+    The bag-or-words model completely ignores the ordering of the words.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Autoregressive models}
+    The autoregressive approach assumes that each of the conditional distributions is independent of all previous observations except the $L$ most recent words. For example, for $L=2$:
+    \begin{equation*}
+        p(x_{1},\hdots,x_{N})=p(x_{1})p(x_{2}|x_{1})\prod_{n=3}^{N}p(x_{n}|x_{n-1},x_{n-2})
+    \end{equation*}
+    The case with $L=1$ is known as a bi-gram model; when $L=2$, it is called a tri-gram model; and in general these are called n-gram models.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Recurrent neural networks}
+    \begin{figure}
+        \caption{A general RNN with parameters $w$}
+        \includegraphics{Figure_13.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Recurrent neural networks}
+    \begin{figure}
+        \caption{An example of a recurrent neural network used for language translation}
+        \includegraphics[width=0.8\textwidth]{Figure_14.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Backpropagation through time}
+    \begin{itemize}
+        \item RNNs can be trained by stochastic gradient descent. The error function consists of a sum over all output units of the error for each unit, in which each output unit has a $\mathrm{softmax}$ activation function along with an associated cross-entropy error function.
+        \begin{itemize}
+            \item In practice, for very long sequences, training can be difficult due to the problems of vanishing gradients or exploding gradients.
+        \end{itemize}
+        \item Bottleneck problem: RNNs deal poorly with long-range dependencies. For the translation task, the entire concept of the English sentence must be captured in the single hidden vector $z^{*}$ of fixed length, which becomes increasingly problematic with longer sequences.
+        \item RNNs do not support parallel computation within a single training example due to the sequential nature of the processing.
+    \end{itemize}
+\end{frame}
+
 \end{document}
