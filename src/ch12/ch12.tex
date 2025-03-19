@@ -422,4 +422,89 @@
     \end{itemize}
 \end{frame}
 
+\section{Transformer Language Models}
+
+\begin{frame}
+    \frametitle{Transformer language models}
+    Transformers can be applied to many different kinds of language processing task, and can be grouped into three categories:
+    \begin{itemize}
+        \item Encoder. For example, sentiment analysis, in which we take a sequence of words as input and provide a single variable representing the sentiment of the text.
+        \item Decoder. For example, image caption generation, in which we take a single image as input and generate a word sequence as output.
+        \item Sequence-to-sequence. For example, machine translation, in which both the input and output comprise a sequence of words.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decoder transformers}
+    \begin{figure}
+        \caption{Architecture of a GPT decoder transformer network}
+        \includegraphics[trim=0 16cm 0 0,clip=true,width=0.8\textwidth]{Figure_15.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decoder transformers}
+    \begin{itemize}
+        \item The stack of transformer layers take a sequence $x_{1},\hdots,x_{N}$ of tokens, each of dimensionality $D$, as input and produce a sequence $\tilde{x}_{1},\hdots,\tilde{x}_{N}$ of tokens, again of dimensionality $D$, as output.
+        \item We make a linear transformation of each output token using a matrix $W^{(p)}$ of dimensionality $D\times{}K$ followed by a $\mathrm{softmax}$ activation function so that each output represents a probability distribution over the dictionary of tokens: $Y=\mathrm{softmax}(\tilde{X}W^{(p)})$.
+        \item Each $\mathrm{softmax}$ output unit has an associated cross-entropy error function, and the error function used for training is the sum of the cross-entropy error values summed over the training set.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decoder transformers}
+    \begin{itemize}
+        \item We can achieve much greater efficiency by processing an entire sequence at once so that each token acts both as a target value for the sequence of previous tokens and as an input value for subsequent tokens.
+        \item However, we have to ensure that the network is not able to cheat by looking ahead in the sequence:
+        \begin{itemize}
+            \item We shift the input sequence to the right by one step.
+            \item We introduce masked attention into each of the attention layers, in which we set to zero all of the attention weights that correspond to a token attending to any later token in the sequence.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decoder transformers}
+    \begin{figure}
+        \caption{An illustration of the mask matrix for masked self-attention}
+        \includegraphics[height=0.7\textheight]{Figure_16.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Decoder transformers}
+    \begin{itemize}
+        \item To make efficient use of the massive parallelism of GPUs, multiple sequences may be stacked together into an input tensor for parallel processing in a single batch.
+        \item The sequences are padded to the same length by introducing a specific token {\tt <pad>}.
+        \item An additional mask is then used in the attention weights to ensure that the outputs do not pay attention to any inputs occupied by the {\tt <pad>} token.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sampling strategies}
+    There are several options for selecting the value of the token based on the computed probabilities:
+    \begin{itemize}
+        \item One extreme is greedy search, which simply selects the token with the highest probability.
+        \begin{itemize}
+            \item Deterministic, $\mathcal{O}(KN)$ cost, far from optimal.
+        \end{itemize}
+        \item The other extreme is exhaustive search, which enumerates all the possible output sequences and then outputs the one that scores the highest predicted probability.
+        \begin{itemize}
+            \item Infeasible given the total number of sequences is $K^{N}$.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sampling strategies}
+    Beam search:
+    \begin{itemize}
+        \item At each step, we maintain a set of $B$ hypotheses, where $B$ is called the beam width.
+        \item We then feed all these sequences through the network, and for each sequence we find the $B$ most probable token values, thereby creating $B^{2}$ possible hypotheses for the extended sequence.
+        \item This list is then pruned by selecting the most probable $B$ hypotheses.
+        \item The sequence probabilities are generally normalized by the corresponding lengths of the sequence before making comparisons to prevent bias towards short sequences.
+        \item Beam search has cost $\mathcal{O}(BKN)$.
+    \end{itemize}
+\end{frame}
+
 \end{document}
