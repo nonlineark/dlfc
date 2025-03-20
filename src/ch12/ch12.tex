@@ -613,4 +613,106 @@
     \end{itemize}
 \end{frame}
 
+\section{Multimodal Transformers}
+
+\begin{frame}
+    \frametitle{Multimodal transformers}
+    \begin{itemize}
+        \item Transformers have proved to be general-purpose models, and become prevalent in nearly all areas of deep learning.
+        \item The core architecture of the transformer layer has remained relatively constant, both over time and across applications.
+        \item The key innovations that enabled the use of transformers in areas other than natural language have largely focused on the representation and encoding of the inputs and outputs.
+        \item One big advantage of a single architecture that is capable of processing many different kinds of data is that it makes multimodal computation relatively straightforward.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Vision transformers}
+    How to convert an input image into tokens:
+    \begin{itemize}
+        \item Split the image into a set of patches of the same size.
+        \item Feed the image through a small convolutional neural network, which can down-sample the image to give a manageable number of tokens each represented by one of the network outputs.
+    \end{itemize}
+    How to encode positional information in the tokens:
+    \begin{itemize}
+        \item It is possible to construct explicit positional embeddings that encode the two-dimensional positional information of the image patches, but in practice this does not generally improve performance.
+        \item It is most common to just use learned positional embeddings.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Generative image transformers}
+    \begin{itemize}
+        \item Images have no natural ordering of their pixels, so it is not intuitive that decoding them autoregressively would be useful.
+        \item Howerver, any distribution can be decomposed into a product of conditionals, provided we first define some ordering of the variables.
+        \item One widely used choice for ordering for the pixels is called raster scan.
+    \end{itemize}
+    \begin{figure}
+        \includegraphics{Figure_23.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Generative image transformers}
+    \begin{itemize}
+        \item Continuous conditional distributions learned by maximum likelihood tend to learn averages of the training data, leading to blurry images.
+        \item Much better results are obtained for image generation by using discrete representations.
+        \begin{itemize}
+            \item Each pixel has $2^{24}$ possible values ($8$ bits for each of the three channels), learning a conditional $\mathrm{softmax}$ distribution over such a high-dimensional space is infeasible.
+            \item Vector quantization:
+            \begin{itemize}
+                \item Introduce a set of $K$ codebook vectors.
+                \item Approximate each data vector by its nearest codebook vector according to some similarity metric.
+            \end{itemize}
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Generative image transformers}
+    The ImageGPT model:
+    \begin{itemize}
+        \item Each pixel is treated as one of a discrete set of three-dimensional color codebook vectors.
+        \item A one-hot encoding therefore gives discrete tokens, and allows the transformer to be trained in the same way as language models, with a next-token classification objective.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Audio data}
+    \begin{itemize}
+        \item Sound is generally stored as a waveform.
+        \item The waveform is pre-processed into mel spectrogram, which is a matrix whose columns represent time steps and whose rows correspond to frequencies.
+        \item The mel spectrogram is viewed as an image which is then tokenized in a similar way to vision transformers.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Text-to-speech}
+    Vall-E (a neural codec language model):
+    \begin{itemize}
+        \item Speech data is converted into a sequence of discrete tokens from a learned dictionary or codebook obtained using vector quantization.
+        \item The input:
+        \begin{itemize}
+            \item Text tokens from a passage of text.
+            \item Additional speech tokens from a short segment of unrelated speech from the same speaker.
+        \end{itemize}
+        \item Target outputs for training consist of the corresponding speech tokens.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Text-to-speech}
+    \begin{figure}
+        \caption{A diagram showing the high-level architecture of Vall-E}
+        \includegraphics[height=0.7\textheight]{Figure_26.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Vision and language transformers}
+    \begin{figure}
+        \caption{Examples of the CM3Leon model performing a variety of different tasks}
+        \includegraphics[width=0.8\textwidth]{Figure_27.png}
+    \end{figure}
+\end{frame}
+
 \end{document}
