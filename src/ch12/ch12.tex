@@ -507,4 +507,110 @@
     \end{itemize}
 \end{frame}
 
+\begin{frame}
+    \frametitle{Sampling strategies}
+    \begin{itemize}
+        \item One problem with approaches such as greedy search and beam search is that they limit the diversity of potential outputs.
+        \item Top-$K$ sampling: Consider only the states having the top $K$ probabilities, for some choice of $K$, and then sample from these according to their renormalized probabilities.
+        \item Top-$p$ sampling: Calculates the cumulative probability of the top outputs until a threshold is reached and then samples from this restricted set of token states.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sampling strategies}
+    A softer version of top-$K$ sampling is to introduce a parameter $T$ called temperature into the definition of the $\mathrm{softmax}$ function: $y_{i}=\frac{\exp(\frac{a_{i}}{T})}{\sum_{j}\exp(\frac{a_{j}}{T})}$.
+    \begin{itemize}
+        \item When $T\to{}0$, the probability mass is concentrated on the most probable state.
+        \item For $T=1$, we recover the unmodified $\mathrm{softmax}$ distribution.
+        \item For $T\to\infty$, the distribution becomes uniform across all states.
+        \item By choosing a value in the range $0<T<1$, the probability is concentrated towards the higher values.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Encoder transformers}
+    \begin{figure}
+        \caption{Architecture of an encoder transformer model}
+        \includegraphics[trim=0 16cm 0 0,clip=true,width=0.8\textwidth]{Figure_18.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Encoder transformers}
+    \begin{itemize}
+        \item The first token of every input string is given by a special token {\tt <class>}, and the corresponding output of the model is ignored during pre-training.
+        \item A randomly chosen subset of the input tokens, say $15\%$, are replaced with a special token denoted {\tt <mask>}. The model is trained to predict the missing tokens at the corresponding output nodes.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Encoder transformers}
+    Once the encoder model is trained it can then be fine-tuned for a variety of different tasks:
+    \begin{itemize}
+        \item For a text classification task, only the first output position is used, which corresponds to the {\tt <class>} token that always appears in the first position of the input sequence.
+        \item If the goal is to classify each token of the input string, then the first output is ignored and the subsequent outputs have a shared linear-plus-softmax layer.
+        \item Alternatively the output of a pre-trained model might feed into a sophisticated generative deep learning model for applications such as text-to-image synthesis.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequence-to-sequence transformers}
+    \begin{figure}
+        \caption{Schematic illustration of one cross-attention layer}
+        \includegraphics[height=0.7\textheight]{Figure_19.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequence-to-sequence transformers}
+    \begin{itemize}
+        \item An encoder transformer can be used to map the input token sequence into a suitable internal representation $Z$.
+        \item Cross attention: The query vectors come from the sequence being generated, the key and value vectors come from the sequence represented by $Z$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequence-to-sequence transformers}
+    \begin{figure}
+        \caption{Schematic illustration of a sequence-to-sequence transformer}
+        \includegraphics[width=0.8\textwidth]{Figure_20.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Large language models}
+    \begin{itemize}
+        \item The use of self-supervised learning led to a paradigm shift in which a large model is first pre-trained using unlabelled data and then subsequently fine-tuned using supervised learning based on a much smaller set of labelled data.
+        \item Fine-tuning can be done by adding extra layers to the outputs of the network or by replacing the last few layers with fresh parameters and then using the labelled data to train these final layers.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Large language models}
+    Low-rank adaptation (LoRA):
+    \begin{itemize}
+        \item A trained over-parameterized model has a low intrinsic dimensionality with respect to fine-tuning.
+        \item LoRA freezes the weights of the original model and adds additional learnable weight matrices into each layer of the transformer in the form of low-rank products.
+        \item Typically only attention-layer weights are modified, whereas MLP-layer weights are kept fixed.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Large language models}
+    \begin{figure}
+        \caption{Schematic illustration of low-rank adaptation}
+        \includegraphics{Figure_21.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Large language models}
+    \begin{itemize}
+        \item As language models have become larger and more powerful, the need for fine-tuning has diminished, with generative language models now able to solve a broad range of tasks simply through text-based interaction.
+        \item Reinforcement learning through human feedback (RLHF): Fune-tuning large language models through human evaluation of generated output.
+        \item The performance of the model now depends on the form of the prompt, leading to a new field called prompt engineering.
+        \item Few-shot learning: By providing some examples within the prompt, the model is able to solve new tasks.
+    \end{itemize}
+\end{frame}
+
 \end{document}
