@@ -81,7 +81,7 @@
     \frametitle{Convolutional filters}
     Consider a convolutional layer using $3\times{}3$ filters. The computation performed by a single filter at a single pixel in layer $l+1$ can be expressed as:
     \begin{equation*}
-        z^{(l+1)}_{i}=f(\sum_{j}w_{j}z^{(i)}_{j}+b)
+        z^{(l+1)}_{i}=f(\sum_{j}w_{j}z^{(l)}_{j}+b)
     \end{equation*}
     This is not equivariant under reordering of the nodes in layer $l$. However, we can achieve equivariance with some simple modifications as follows:
     \begin{equation*}
@@ -198,6 +198,117 @@
         y=f(\sum_{n\in\mathcal{V}}h^{(L)}_{n})
     \end{equation*}
     where the function $f$ may contain learnable parameters. Other invariant aggregation functions can be used such as averages or element-wise minimum or maximum.
+\end{frame}
+
+\section{General Graph Networks}
+
+\begin{frame}
+    \frametitle{Graph attention networks}
+    Graph attention networks can capture an inductive bias that says some neighboring nodes will be more important than others in determining the best update in a way that depends on the data itself:
+    \begin{equation*}
+        z^{(l)}_{n}=\mathrm{Aggregate}(\{h^{(l)}_{m}:m\in\mathcal{N}(n)\})=\sum_{m\in\mathcal{N}(n)}A_{nm}h^{(l)}_{m}
+    \end{equation*}
+    where the attention coefficients $A_{nm}$ should satisfy:
+    \begin{align*}
+        A_{nm}&\ge{}0 \\
+        \sum_{m\in\mathcal{N}(n)}A_{nm}&=1
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Graph attention networks}
+    Some ways to construct the attention coefficients:
+    \begin{equation*}
+        A_{nm}=\frac{\exp(h_{n}^{T}Wh_{m})}{\sum_{m'\in\mathcal{N}(n)}\exp(h_{n}^{T}Wh_{m'})}
+    \end{equation*}
+    where $W$ is a $D\times{}D$ matrix of learnable parameters. Or:
+    \begin{equation*}
+        A_{nm}=\frac{\exp(\mathrm{MLP}(h_{n},h_{m}))}{\sum_{m'\in\mathcal{N}(n)}\mathrm{MLP}(h_{n},h_{m'})}
+    \end{equation*}
+    where the $\mathrm{MLP}$ has a single continuous output variable whose value is invariant if the input vectors are exchanged.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Edge embeddings}
+    Some networks also have data associated with the edges. In addition to the node embeddings given by $h^{(l)}_{n}$, we therefore introduce edge embeddings $e^{(l)}_{nm}$. We can then define general message-passing equations in the form:
+    \begin{align*}
+        e^{(l+1)}_{nm}&=\mathrm{Update}_{\textrm{edge}}(e^{(l)}_{nm},h^{(l)}_{n},h^{(l)}_{m}) \\
+        z^{(l+1)}_{n}&=\mathrm{Aggregate}_{\textrm{node}}(\{e^{(l+1)}_{nm}:m\in\mathcal{N}(n)\}) \\
+        h^{(l+1)}_{n}&=\mathrm{Update}_{\textrm{node}}(h^{(l)}_{n},z^{(l+1)}_{n})
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Graph embeddings}
+    In addition to node and edge embeddings we can also maintain and update an embedding vector $g^{(l)}$ that relates to the graph as a whole. We can define general message-passing equations:
+    \begin{align*}
+        e^{(l+1)}_{nm}&=\mathrm{Update}_{\textrm{edge}}(e^{(l)}_{nm},h^{(l)}_{n},h^{(l)}_{m},g^{(l)}) \\
+        z^{(l+1)}_{n}&=\mathrm{Aggregate}_{\textrm{node}}(\{e^{(l+1)}_{nm}:m\in\mathcal{N}(n)\}) \\
+        h^{(l+1)}_{n}&=\mathrm{Update}_{\textrm{node}}(h^{(l)}_{n},z^{(l+1)}_{n},g^{(l)}) \\
+        g^{(l+1)}&=\mathrm{Update}_{\textrm{graph}}(g^{(l)},\{h^{(l+1)}_{n}:n\in\mathcal{V}\},\{e^{(l+1)}_{nm}:(n,m)\in\mathcal{E}\})
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Graph embeddings}
+    \begin{algorithm}[H]
+        \caption{Graph neural network with node, edge, and graph embeddings}
+        \For{$l\gets{}0$ \KwTo $L-1$}{
+            $e^{(l+1)}_{nm}\gets\mathrm{Update}_{\textrm{edge}}(e^{(l)}_{nm},h^{(l)}_{n},h^{(l)}_{m},g^{(l)})$\;
+            $z^{(l+1)}_{n}\gets\mathrm{Aggregate}_{\textrm{node}}(\{e^{(l+1)}_{nm}:m\in\mathcal{N}(n)\})$\;
+            $h^{(l+1)}_{n}\gets\mathrm{Update}_{\textrm{node}}(h^{(l)}_{n},z^{(l+1)}_{n},g^{(l)})$\;
+            $g^{(l+1)}\gets\mathrm{Update}_{\textrm{graph}}(g^{(l)},\{h^{(l+1)}_{n}:n\in\mathcal{V}\},\{e^{(l+1)}_{nm}:(n,m)\in\mathcal{E}\})$\;
+        }
+        \Return{$\{h^{(L)}_{n}\}$,$\{e^{(L)}_{nm}\}$,$g^{(L)}$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Over-smoothing}
+    One significant problem that can arise with some graph neural networks is called over-smoothing in which the node-embedding vectors tend to become very similar to each other after a number of iterations of message-passing. One way to help alleviate this issue is to introduce residual connections:
+    \begin{equation*}
+        h^{(l+1)}_{n}=\mathrm{Update}_{\textrm{node}}(h^{(l)}_{n},z^{(l+1)}_{n},g^{(l)})+h^{(l)}_{n}
+    \end{equation*}
+    Another approach for mitigating the effects of over-smoothing is to allow the output layer to take information from all previous layers of the network and not just the final convolutional layer:
+    \begin{equation*}
+        y_{n}=f(h^{(1)}_{n}\oplus\hdots\oplus{}h^{(L)}_{n})
+    \end{equation*}
+    where $a\oplus{}b$ denotes the concatenation or max pooling of vectors $a$ and $b$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Regularization}
+    \begin{itemize}
+        \item Standard techniques: For example, adding the sum-of-squares of the parameter values to the loss function.
+        \item Parameter sharing: Weights and biases can also be shared across layers to reduce the number of independent parameters.
+        \item Dropout: Omitting random subsets of the graph nodes or edges during training.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Geometric deep learning}
+    In applications of graph neural networks associated with spatial properties, there are additional equivariance and invariance properties that can be built into the network architecture. For example, the task of predicting the properties of a molecule:
+    \begin{itemize}
+        \item The molecule can be represented as a list of atoms of given types along with the spatial coordinates of each atom denoted by $r^{(l)}_{n}$.
+        \item The values for $r^{(l)}_{n}$ depends on the arbitrary choice of coordinate system, whereas the properties of the molecule do not:
+        \begin{itemize}
+            \item Translation.
+            \item Rotation.
+            \item Reflection.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Geometric deep learning}
+    The new embeddings $r^{(l)}_{n}$ can be incorporated into the graph neural network update equations to achieve the required symmetry properties:
+    \begin{align*}
+        e^{(l+1)}_{nm}&=\mathrm{Update}_{\textrm{edge}}(e^{(l)}_{nm},h^{(l)}_{n},h^{(l)}_{m},||r^{(l)}_{n}-r^{(l)}_{m}||^{2}) \\
+        r^{(l+1)}_{n}&=r^{(l)}_{n}+C\sum_{m\in\mathcal{N}(n)}(r^{(l)}_{n}-r^{(l)}_{m})\phi(e^{(l+1)}_{nm}) \\
+        z^{(l+1)}_{n}&=\mathrm{Aggregate}_{\textrm{node}}(\{e^{(l+1)}_{nm}:m\in\mathcal{N}(n)\}) \\
+        h^{(l+1)}_{n}&=\mathrm{Update}_{\textrm{node}}(h^{(l)}_{n},z^{(l+1)}_{n})
+    \end{align*}
+    where $\phi$ is a general scalar function of the edge embeddings and is represented by a neural network, and the coefficient $C$ is typically set equal to the reciprocal of the number of terms in the sum.
 \end{frame}
 
 \end{document}
