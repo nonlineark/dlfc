@@ -1,0 +1,113 @@
+\documentclass{beamer}
+
+\usepackage[ruled]{algorithm2e}
+\SetKw{KwRet}{return}
+\usepackage{amsmath}
+\usepackage{array}
+
+\usetheme{AnnArbor}
+\usecolortheme{crane}
+\usefonttheme[onlymath]{serif}
+
+\title{Deep Learning - Foundations and Concepts}
+\subtitle{Chapter 14. Sampling}
+\author{nonlineark@github}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Basic Sampling Algorithms}
+
+\begin{frame}
+    \frametitle{Expectations}
+    For some applications the goal is to evaluate expectations with respect to the distribution. Suppose we wish to find the expectation of a function $f(z)$ with respect to a probability distribution $p(z)$:
+    \begin{equation*}
+        E(f)=\int{}f(z)p(z)\mathrm{d}z
+    \end{equation*}
+    The general idea behind sampling methods is to obtain a set of samples $z^{(l)}$ drawn independently from the distribution $p(z)$. This allows the expectation to be approximated by a finite sum:
+    \begin{equation*}
+        \bar{f}=\frac{1}{L}\sum_{l=1}^{L}f(z^{(l)})
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Expectations}
+    Let's calculate the expectation and variance of $\bar{f}$:
+    \begin{align*}
+        E(\bar{f})&=E(\frac{1}{L}\sum_{l=1}^{L}f(z^{(l)}))=E(f) \\
+        E(\bar{f}^{2})&=E(\frac{1}{L^{2}}\sum_{l,l'}f(z^{(l)})f(z^{(l')}))=(E(f))^{2}+\frac{1}{L}\mathrm{var}(f) \\
+        \mathrm{var}(\bar{f})&=E(\bar{f}^{2})-(E(\bar{f}))^{2}=\frac{1}{L}\mathrm{var}(f)
+    \end{align*}
+    Which shows that:
+    \begin{itemize}
+        \item $\bar{f}$ is an unbiased estimator of $E(f)$.
+        \item Due to the linear decrease of the variance with increasing $L$, in principle, high accuracy may be achievable with a relatively small number of samples $z^{(l)}$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Standard distributions}
+    \begin{block}{Problem}
+        Suppose that $z$ is uniformly distributed over the interval $(0,1)$. Given a probability density function $p$, find a function $g$ such that the random variable $y=g(z)$ has $p$ as its probability density function.
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Standard distributions}
+    Let $U$ be the probability density function of the uniform distribution over the interval $(0,1)$, we have:
+    \begin{align*}
+        p(y)\mathrm{d}y&=U(z)\mathrm{d}z \\
+        f(y_{0})&=\int_{-\infty}^{y_{0}}p(y)\mathrm{d}y=\int_{-\infty}^{z_{0}}U(z)\mathrm{d}z=z_{0} \\
+        y_{0}&=f^{-1}(z_{0})
+    \end{align*}
+    So we have to transform the uniformly distributed random numbers using a function that is the inverse of the cumulative distribution function of the desired probability density function.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Standard distributions}
+    Some examples:
+    \begin{itemize}
+        \item Exponential distribution $p(y)=\lambda\exp(-\lambda{}y)$:
+        \begin{itemize}
+            \item $z=f(y)=\int_{0}^{y}p(t)\mathrm{d}t=1-\exp(-\lambda{}y)$.
+            \item $y=-\frac{1}{\lambda}\log(1-z)$.
+        \end{itemize}
+        \item Cauchy distribution $p(y)=\frac{1}{\pi}\frac{1}{1+y^{2}}$:
+        \begin{itemize}
+            \item $z=f(y)=\int_{-\infty}^{y}p(t)\mathrm{d}t=\frac{1}{\pi}\arctan{}y+\frac{1}{2}$.
+            \item $y=\tan(\pi(z-\frac{1}{2}))$.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Standard distributions}
+    The generalization to multiple variables involves the Jacobian of the change of variables, so that:
+    \begin{equation*}
+        p_{Y}(y_{1},\hdots,y_{M})=p_{Z}(z_{1},\hdots,z_{M})|\frac{\partial(z_{1},\hdots,z_{M})}{\partial(y_{1},\hdots,y_{M})}|
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Standard distributions}
+    The Box-Muller method for generating samples from a Gaussian distribution. First, suppose we generate pairs of uniformly distributed random numbers $z_{1},z_{2}\in(-1,1)$. Next, we discard each pair unless it satisfies $z_{1}^{2}+z_{2}^{2}\le{}1$. This leads to a uniform distribution of points inside the unit circle with $p_{Z}(z_{1},z_{2})=\frac{1}{\pi}$. Then, for each pair $z_{1},z_{2}$ we evaluate the quantities:
+    \begin{equation*}
+        y=z\frac{\sqrt{-4\log||z||}}{||z||}
+    \end{equation*}
+    The joint distribution of $y_{1}$ and $y_{2}$ is given by:
+    \begin{equation*}
+        p_{Y}(y_{1},y_{2})=p_{Z}(z_{1},z_{2})|\frac{\partial(z_{1},z_{2})}{\partial(y_{1},y_{2})}|=(\frac{1}{\sqrt{2\pi}}\exp(-\frac{y_{1}^{2}}{2}))(\frac{1}{\sqrt{2\pi}}\exp(-\frac{y_{2}^{2}}{2}))
+    \end{equation*}
+    So $y_{1}$ and $y_{2}$ are independent and each has a Gaussian distribution with zero mean and unit variance.
+\end{frame}
+
+\end{document}
