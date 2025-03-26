@@ -1,9 +1,6 @@
 \documentclass{beamer}
 
-\usepackage[ruled]{algorithm2e}
-\SetKw{KwRet}{return}
 \usepackage{amsmath}
-\usepackage{array}
 
 \usetheme{AnnArbor}
 \usecolortheme{crane}
@@ -108,6 +105,56 @@
         p_{Y}(y_{1},y_{2})=p_{Z}(z_{1},z_{2})|\frac{\partial(z_{1},z_{2})}{\partial(y_{1},y_{2})}|=(\frac{1}{\sqrt{2\pi}}\exp(-\frac{y_{1}^{2}}{2}))(\frac{1}{\sqrt{2\pi}}\exp(-\frac{y_{2}^{2}}{2}))
     \end{equation*}
     So $y_{1}$ and $y_{2}$ are independent and each has a Gaussian distribution with zero mean and unit variance.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Rejection sampling}
+    Suppose that:
+    \begin{itemize}
+        \item We wish to sample from a distribution $p(z)$, and sampling directly from $p(z)$ is difficult.
+        \item We are easily able to evaluate $p(z)$ for any given value of $z$, up to some normalizing constant $Z_{p}$, so that $p(z)=\frac{1}{Z_{p}}\tilde{p}(z)$, where $\tilde{p}(z)$ can readily be evaluated, but $Z_{p}$ is unknown.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Rejection sampling}
+    To apply rejection sampling:
+    \begin{itemize}
+        \item Find a simpler distribution $q(z)$, called a proposal distribution, from which we can readily draw samples.
+        \item Introduce a constant $k$ whose value is chosen such that $kq(z)\ge\tilde{p}(z)$ for all values of $z$.
+        \item Generate a number $z_{0}$ from the distribution $q(z)$.
+        \item Generate a number $u_{0}$ from the uniform distribution over $[0,kq(z_{0})]$.
+        \item If $u_{0}>\tilde{p}(z_{0})$ then the sample is rejected, otherwise $u_{0}$ is retained.
+        \item The corresponding $z$ values in the remaining pairs are distributed according to $p(z)$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Rejection sampling}
+    \begin{figure}
+        \caption{Illustration of the rejection sampling method}
+        \includegraphics{Figure_4.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Rejection sampling}
+    Let's verify the correctness of the rejection sampling method. Suppose that random variable $Z$ is distributed according to $q(z)$, and random variable $U$ is uniformly distributed over $[0,kq(Z)]$. We want to calculate the probability density function of the random variable $Z|0\le{}U\le\tilde{p}(Z)$:
+    \begin{align*}
+        P(Z\in{}E|0\le{}U\le\tilde{p}(Z))&=\frac{P(Z\in{}E,0\le{}U\le\tilde{p}(Z))}{P(0\le{}U\le\tilde{p}(Z))} \\
+        &=\frac{\int_{E}q(z)\frac{\tilde{p}(z)}{kq(z)}\mathrm{d}z}{\int_{\mathbb{R}}q(z)\frac{\tilde{p}(z)}{kq(z)}\mathrm{d}z} \\
+        &=\int_{E}p(z)\mathrm{d}z
+    \end{align*}
+    We see that the random variable $Z|0\le{}U\le\tilde{p}(Z)$ is indeed distributed according to $p(z)$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Rejection sampling}
+    Let's calculate the probability that a sample will be accepted:
+    \begin{equation*}
+        P_{\textrm{accept}}=\int_{\mathbb{R}}q(z)\frac{\tilde{p}(z)}{kq(z)}\mathrm{d}z=\frac{Z_{p}}{k}
+    \end{equation*}
+    We see that the constant $k$ should be as small as possible subject to the limitation that $kq(z)$ must be nowhere less than $\tilde{p}(z)$.
 \end{frame}
 
 \end{document}
