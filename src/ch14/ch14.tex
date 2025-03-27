@@ -157,4 +157,90 @@
     We see that the constant $k$ should be as small as possible subject to the limitation that $kq(z)$ must be nowhere less than $\tilde{p}(z)$.
 \end{frame}
 
+\begin{frame}
+    \frametitle{Adaptive rejection sampling}
+    \begin{itemize}
+        \item In many instances, it can be difficult to determine a suitable analytic form for the envelope distribution $q(z)$.
+        \item An alternative approach is to construct the envelope function on the fly based on measured values of the distribution $p(z)$.
+        \item Constructing an envelope function is particularly straightforward when $p(z)$ is log concave.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Adaptive rejection sampling}
+    \begin{itemize}
+        \item Evaluate the function $\log{}p(z)$ and its gradient at some initial set of grid points.
+        \item The intersections of the resulting tangent lines are used to construct the envelope function.
+        \item Draw a sample value from the envelope distribution. This is straightforward because the envelope function comprises a piecewise exponential distribution.
+        \item If the sample is accepted, then it will be a draw from the desired distribution.
+        \item If the sample is rejected, then it is incorporated into the set of grid points, a new tangent line is computed, and the envelope function is thereby refined.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Adaptive rejection sampling}
+    \begin{figure}
+        \caption{Illustration of the construction of an envelope function for adaptive rejection sampling}
+        \includegraphics{Figure_6.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Importance sampling}
+    The technique of importance sampling provides a framework for approximating expectations directly but does not itself provide a mechanism for drawing samples from a distribution $p(z)$.
+    \bigbreak
+    Suppose we wish to calculate the expectation of a function $f(z)$ with respect to a distribution $p(z)$:
+    \begin{itemize}
+        \item The distribution $p(z)$ can be evaluated only up to a normalization constant, so that $p(z)=\frac{\tilde{p}(z)}{Z_{p}}$, where $Z_{p}$ is unknown.
+        \item Because it is difficult to draw samples directly from $p(z)$, we rely on a proposal distribution $q(z)$ from which it is easy to draw samples.
+        \item The distribution $q(z)$ also has an unknown normalization constant $Z_{q}$, so that $q(z)=\frac{\tilde{q}(z)}{Z_{q}}$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Importance sampling}
+    Let's calculate the expectation of $f(z)$ with respect to $p(z)$:
+    \begin{align*}
+        E(f)&=\int{}f(z)p(z)\mathrm{d}z=\int{}f(z)\frac{p(z)}{q(z)}q(z)\mathrm{d}z \\
+        &\approx\frac{1}{L}\sum_{l=1}^{L}f(z^{(l)})\frac{p(z^{(l)})}{q(z^{(l)})}=\frac{Z_{q}}{Z_{p}}\frac{1}{L}\sum_{l=1}^{L}f(z^{(l)})\frac{\tilde{p}(z^{(l)})}{\tilde{q}(z^{(l)})} \\
+        \frac{Z_{p}}{Z_{q}}&=\frac{1}{Z_{q}}\int\tilde{p}(z)\mathrm{d}z=\frac{1}{Z_{q}}\int\frac{\tilde{p}(z)}{q(z)}q(z)\mathrm{d}z \\
+        &\approx\frac{1}{Z_{q}}\frac{1}{L}\sum_{l=1}^{L}\frac{\tilde{p}(z^{(l)})}{q(z^{(l)})}=\frac{1}{L}\sum_{l=1}^{L}\frac{\tilde{p}(z^{(l)})}{\tilde{q}(z^{(l)})}
+    \end{align*}
+    where the samples $\{z^{(l)}\}$ are drawn from $q(z)$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Importance sampling}
+    Let:
+    \begin{align*}
+        \tilde{r}_{l}&=\frac{\tilde{p}(z^{(l)})}{\tilde{q}(z^{(l)})} \\
+        w_{l}&=\frac{\tilde{r}_{l}}{\sum_{l'}\tilde{r}_{l'}}
+    \end{align*}
+    we see that:
+    \begin{equation*}
+        E(f)\approx\frac{\sum_{l=1}^{L}f(z^{(l)})\tilde{r}_{l}}{\sum_{l=1}^{L}\tilde{r}_{l}}=\sum_{l=1}^{L}w_{l}f(z^{(l)})
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sampling-importance-resampling}
+    \begin{itemize}
+        \item Draw $L$ samples $z^{(1)},\hdots,z^{(L)}$ from $q(z)$.
+        \item Construct weights $w_{1},\hdots,w_{L}$ using $w_{l}=\frac{\tilde{r}_{l}}{\sum_{l'}\tilde{r}_{l'}}=\frac{\tilde{p}(z^{(l)})/q(z^{(l)})}{\sum_{l'}\tilde{p}(z^{(l')})/q(z^{(l')})}$.
+        \item Draw $L$ samples from the discrete distribution $(z^{(1)},\hdots,z^{(L)})$ with probabilities given by the weights $(w_{1},\hdots,w_{L})$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sampling-importance-resampling}
+    Let's verify the correctness of the sampling-importance-resampling method.
+    \begin{equation*}
+        P(z\le{}a)=\sum_{l=1}^{L}I(z^{(l)}\le{}a)w_{l}=\frac{\sum_{l=1}^{L}I(z^{(l)}\le{}a)\frac{\tilde{p}(z^{(l)})}{q(z^{(l)})}}{\sum_{l=1}^{L}\frac{\tilde{p}(z^{(l)})}{q(z^{(l)})}}
+    \end{equation*}
+    where $I$ is the indicator function. Taking the limit $L\to\infty$:
+    \begin{align*}
+        P(z\le{}a)&=\frac{\int{}I(z\le{}a)\frac{\tilde{p}(z)}{q(z)}q(z)\mathrm{d}z}{\int\frac{\tilde{p}(z)}{q(z)}q(z)\mathrm{d}z}=\frac{\int_{-\infty}^{a}\tilde{p}(z)\mathrm{d}z}{\int_{-\infty}^{\infty}\tilde{p}(z)\mathrm{d}z}=\int_{-\infty}^{a}p(z)\mathrm{d}z
+    \end{align*}
+\end{frame}
+
 \end{document}
