@@ -1,5 +1,7 @@
 \documentclass{beamer}
 
+\usepackage[ruled]{algorithm2e}
+\SetKw{KwRet}{return}
 \usepackage{amsmath}
 
 \usetheme{AnnArbor}
@@ -240,6 +242,114 @@
     where $I$ is the indicator function. Taking the limit $L\to\infty$:
     \begin{align*}
         P(z\le{}a)&=\frac{\int{}I(z\le{}a)\frac{\tilde{p}(z)}{q(z)}q(z)\mathrm{d}z}{\int\frac{\tilde{p}(z)}{q(z)}q(z)\mathrm{d}z}=\frac{\int_{-\infty}^{a}\tilde{p}(z)\mathrm{d}z}{\int_{-\infty}^{\infty}\tilde{p}(z)\mathrm{d}z}=\int_{-\infty}^{a}p(z)\mathrm{d}z
+    \end{align*}
+\end{frame}
+
+\section{Markov Chain Monte Carlo}
+
+\begin{frame}
+    \frametitle{Markov Chain Monte Carlo}
+    Suppose that:
+    \begin{itemize}
+        \item We wish to sample from a distribution $p(z)$, and sampling directly from $p(z)$ is difficult.
+        \item We are easily able to evaluate $p(z)$ for any given value of $z$, up to some normalizing constant $Z_{p}$, so that $p(z)=\frac{1}{Z_{p}}\tilde{p}(z)$, where $\tilde{p}(z)$ can readily be evaluated, but $Z_{p}$ is unknown.
+        \item We maintain a record of the current state $z^{(\tau)}$, and the proposal distribution $q(z|z^{(\tau)})$ is conditioned on this current state.
+        \item At each cycle of the algorithm, we generate a candidate sample $z^{*}$ from the proposal distribution and then accept the sample according to an appropriate criterion.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The Metropolis algorithm}
+    In the basic Metropolis algorithm, we assume that the proposal distribution is symmetric, that is $q(z_{A}|z_{B})=q(z_{B}|z_{A})$ for all values of $z_{A}$ and $z_{B}$. The candidate sample is then accepted with probability:
+    \begin{equation*}
+        A(z^{*},z^{(\tau)})=\min(1,\frac{\tilde{p}(z^{*})}{\tilde{p}(z^{(\tau)})})
+    \end{equation*}
+    As we will see, if $q(z_{A}|z_{B})$ is positive for any values of $z_{A}$ and $z_{B}$, the distribution of $z^{(\tau)}$ tends to $p(z)$ as $\tau\to\infty$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{The Metropolis algorithm}
+    \begin{algorithm}[H]
+        \caption{Metropolis sampling}
+        $z_{\mathrm{prev}}\gets{}z^{(0)}$\;
+        \For{$\tau\gets{}1$ \KwTo $T$}{
+            $z^{*}\sim{}q(z|z_{\mathrm{prev}})$\;
+            $u\sim\mathcal{U}(0,1)$\;
+            \If{$\frac{\tilde{p}(z^{*})}{\tilde{p}(z_{\mathrm{prev}})}>u$}{
+                $z_{\mathrm{prev}}\gets{}z^{*}$\;
+            }
+        }
+        \Return{$z_{\mathrm{prev}}$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Markov chains}
+    For a first-order Markov chain $z^{(1)},\hdots,z^{(M)},\hdots$:
+    \begin{itemize}
+        \item The transition probability $T_{m}(z^{(m)},z^{(m+1)})$ from $z^{(m)}$ to $z^{(m+1)}$ is defined as $p(z^{(m+1)}|z^{(m)})$.
+        \item A Markov chain is called homogeneous if the transition probabilities are the same for all $m$.
+        \item A distribution is said to be invariant with respect to a Markov chain if the marginal distributions $p(z^{(m)})$ are invariant.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Markov chains}
+    A transition probability $T(z,z')$ is said to satisfy detailed balance with respect to a distribution $p(z)$ if:
+    \begin{equation*}
+        p(z)T(z,z')=p(z')T(z',z)
+    \end{equation*}
+    It is easily seen that $p(z)$ is invariant:
+    \begin{equation*}
+        \int{}p(z)T(z,z')\mathrm{d}z=\int{}p(z')T(z',z)\mathrm{d}z=p(z')\int{}p(z|z')\mathrm{d}z=p(z')
+    \end{equation*}
+    A Markov chain that respects detailed balance is said to be reversible.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Markov chains}
+    Our goal is to use Markov chains to sample from a given distribution $p^{*}(z)$:
+    \begin{itemize}
+        \item We can achieve this if we set up a Markov chain such that $p^{*}(z)$ is invariant.
+        \item We must also require that for $m\to\infty$, the distribution $p(z^{(m)})$ converges to $p^{*}(z)$, irrespective of the choice of initial distribution $p(z^{(0)})$. This property is called ergodicity, and the invariant distribution is then called the equilibrium distribution.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The Metropolis-Hastings algorithm}
+    The Metropolis-Hastings algorithm, which is a generalization of the basic Metropolis algorithm, applies when the proposal distribution is no longer a symmetric function of its arguments. The candidate sample is accepted with probability:
+    \begin{equation*}
+        A_{k}(z^{*},z^{(\tau)})=\min(1,\frac{\tilde{p}(z^{*})q_{k}(z^{(\tau)}|z^{*})}{\tilde{p}(z^{(\tau)})q_{k}(z^{*}|z^{(\tau)})})
+    \end{equation*}
+    Here $k$ labels the members of the set of possible transitions being considered. For a symmetric proposal distribution, the Metropolis-Hastings criterion reduces to the standard Metropolis criterion.
+\end{frame}
+
+\begin{frame}
+    \frametitle{The Metropolis-Hastings algorithm}
+    \begin{algorithm}[H]
+        \caption{Metropolis-Hastings sampling}
+        $z_{\mathrm{prev}}\gets{}z^{(0)}$\;
+        \For{$\tau\gets{}1$ \KwTo $T$}{
+            $k\gets{}M(\tau)$\;
+            $z^{*}\sim{}q_{k}(z|z_{\mathrm{prev}})$\;
+            $u\sim\mathcal{U}(0,1)$\;
+            \If{$\frac{\tilde{p}(z^{*})q_{k}(z_{\mathrm{prev}}|z^{*})}{\tilde{p}(z_{\mathrm{prev}})q_{k}(z^{*}|z_{\mathrm{prev}})}>u$}{
+                $z_{\mathrm{prev}}\gets{}z^{*}$\;
+            }
+        }
+        \Return{$z_{\mathrm{prev}}$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The Metropolis-Hastings algorithm}
+    We can show that $p(z)$ is an invariant distribution of the Markov chain defined by the Metropolis-Hastings algorithm by showing that detailed balance is satisfied:
+    \begin{align*}
+        p(z)T_{k}(z,z')&=p(z)q_{k}(z'|z)A_{k}(z',z) \\
+        &=\min(p(z)q_{k}(z'|z),p(z')q_{k}(z|z')) \\
+        &=\min(p(z')q_{k}(z|z'),p(z)q_{k}(z'|z)) \\
+        &=p(z')q_{k}(z|z')A_{k}(z,z') \\
+        &=p(z')T_{k}(z',z)
     \end{align*}
 \end{frame}
 
