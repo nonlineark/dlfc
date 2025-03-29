@@ -353,4 +353,70 @@
     \end{align*}
 \end{frame}
 
+\begin{frame}
+    \frametitle{Gibbs sampling}
+    \begin{algorithm}[H]
+        \caption{Gibbs sampling}
+        \For{$\tau\gets{}1$ \KwTo $T$}{
+            \For{$m\gets{}1$ \KwTo $M$}{
+                $z_{m}\sim{}p(z_{m}|\{z_{m'\ne{}m}\})$\;
+            }
+        }
+        \Return{$\{z_{1},\hdots,z_{M}\}$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Gibbs sampling}
+    Let's first verify that the distribution $p(z)$ is an invariant of each of the Gibbs sampling steps individually. Suppose at a certain step, $z$ is transitioned to $z'$, and the variable that has been updated is $z_{m}$:
+    \begin{align*}
+        &\int{}T(z,z')p(z)\mathrm{d}z \\
+        &=\int{}p(z_{m}'|z_{m'\ne{}m}')p(z_{1}',\hdots,z_{m-1}',z_{m},z_{m+1}',\hdots,z_{M}')\mathrm{d}z_{m} \\
+        &=p(z_{m}'|z_{m'\ne{}m}')p(z_{m'\ne{}m}')=p(z')
+    \end{align*}
+    To ensure that the Gibbs sampling procedure samples from the correct distribution, it has to be ergodic. A sufficient condition for ergodicity is that none of the conditional distributions are anywhere zero.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Gibbs sampling}
+    The Gibbs sampling procedure is a particular instance of the Metropolis-Hastings algorithm. Consider a Metropolis-Hastings sampling step, at which $z$ is transitioned to $z^{*}$, and the variable that has been updated is $z_{m}$. The factor that determines the acceptance probability is given by:
+    \begin{align*}
+        A(z^{*},z)&=\min(1,\frac{p(z^{*})q_{m}(z|z^{*})}{p(z)q_{m}(z^{*}|z)}) \\
+        &=\min(1,\frac{p(z^{*}_{m}|z^{*}_{m'\ne{}m})p(z^{*}_{m'\ne{}m})p(z_{m}|z^{*}_{m'\ne{}m})}{p(z_{m}|z_{m'\ne{}m})p(z_{m'\ne{}m})p(z^{*}_{m}|z_{m'\ne{}m})}) \\
+        &=1
+    \end{align*}
+    Thus the Metropolis-Hastings steps are always accepted.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Gibbs sampling}
+    One approach to reducing the random walk behavior in Gibbs sampling is called over-relaxation. It applies to problems for which the conditional distributions are Gaussian. At each step of the Gibbs sampling algorithm, the conditional distribution for a particlar component $z_{m}$ has some mean $\mu_{m}$ and some variance $\sigma^{2}_{m}$. In the over-relaxation framework, the value of $z_{m}$ is replaced with:
+    \begin{equation*}
+        z_{m}'=\mu_{m}+\alpha_{m}(z_{m}-\mu_{m})+\sigma_{m}\sqrt{1-\alpha_{m}^{2}}\nu
+    \end{equation*}
+    where $\nu$ is a Gaussian random variable with zero mean and unit variance, and $\alpha$ is a parameter such that $-1<\alpha<1$. This step leaves the desired distribution invariant because $z_{m}'$ also has mean $\mu_{m}$ and variance $\sigma^{2}_{m}$. The effect of over-relaxation is to encourage directed motion through state space when the variables are highly correlated.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Ancestral sampling}
+    For a directed graph with no observed variables, it is straightforward to sample from the joint distribution using the following ancestral sampling approach:
+    \begin{equation*}
+        p(z)=\prod_{m=1}^{M}p(z_{m}|\mathrm{pa}(m))
+    \end{equation*}
+    To obtain a sample from the joint distribution, we make one pass through the set of variables in the order $z_{1},\hdots,z_{M}$ sampling from the conditional distributions $p(z_{m}|\mathrm{pa}(m))$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Ancestral sampling}
+    Consider a directed graph in which some of the nodes, which comprise the evidence set $\mathcal{E}$, are instantiated with observed values. The likelihood weighted sampling method:
+    \begin{itemize}
+        \item For each variable in turn:
+        \begin{itemize}
+            \item If that variable is in the evidence set, the it is just set to its instantiated value.
+            \item If it is not in the evidence set, then it is sampled from the conditional distribution $p(z_{m}|\mathrm{pa}(m))$.
+        \end{itemize}
+        \item The weighting associated with the resulting sample $z$ is then given by $r(z)=\prod_{z_{m}\notin\mathcal{E}}\frac{p(z_{m}|\mathrm{pa}(m))}{p(z_{m}|\mathrm{pa}(m))}\prod_{z_m\in\mathcal{E}}\frac{p(z_{m}|\mathrm{pa}(m))}{1}=\prod_{z_{m}\in\mathcal{E}}p(z_{m}|\mathrm{pa}(m))$.
+    \end{itemize}
+\end{frame}
+
 \end{document}
