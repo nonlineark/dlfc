@@ -419,4 +419,137 @@
     \end{itemize}
 \end{frame}
 
+\section{Langevin Sampling}
+
+\begin{frame}
+    \frametitle{Langevin sampling}
+    \begin{itemize}
+        \item The Metropolis-Hastings algorithm can be relatively inefficient since the proposal distribution is often a simple, fixed distribution that can generate updates in any direction in the data space, leading to a random walk.
+        \item We can introduce Markov chain sampling algorithms that make use of the gradient of the probability density with respect to the data vector so as to take steps that preferentially move towards regions of higher probability.
+        \item Langevin sampling avoids the use of an acceptance test, and arises in the context of machine learning models defined in terms of energy functions.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Energy-based models}
+    \begin{itemize}
+        \item The energy function $E(x;w)$ is a real valued function of its arguments with no other constraints.
+        \item The exponential $\exp(-E(x;w))$ can be viewed as an unnormalized probability distribution over $x$:
+        \begin{itemize}
+            \item The introduction of the minus sign means that higher values of energy correspond to lower values of probability.
+        \end{itemize}
+        \item We can then define a normalized distribution using $p(x;w)=\frac{1}{Z(w)}\exp(-E(x;w))$:
+        \begin{itemize}
+            \item $Z(w)$, known as the partition function, is defined by $Z(w)=\int\exp(-E(x;w))\mathrm{d}x$.
+        \end{itemize}
+        \item The energy function is often modelled using a deep neural network with input vector $x$ and a scalar output $E(x;w)$, where $w$ represents the weights and biases in the network.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Energy-based models}
+    \begin{itemize}
+        \item The big advantage of energy-based models is their flexibility in that they bypass the requirement for normalization.
+        \item A corresponding disadvantage is that since the normalizing constant is unknown, they can be more difficult to train:
+        \begin{itemize}
+            \item To compute the gradient of the log likelihood with respect to $w$, we need to know the form of $Z(w)$.
+            \item However, for many choices of the energy function $E(x;w)$, it will be impractical to evaluate the partition function.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximizing the likelihood}
+    We can make use of Monte Carlo sampling methods to approximate the gradient of the log likelihood with respect to the model parameters. For a single data point $x$:
+    \begin{equation*}
+        \nabla_{w}\log{}p(x;w)=-\nabla_{w}E(x;w)-\nabla_{w}\log{}Z(w)
+    \end{equation*}
+    Assume that the data points from the training set are drawn independently from some unknown distribution $p_{\mathcal{D}}(x)$:
+    \begin{equation*}
+        E_{x\sim{}p_{\mathcal{D}}(x)}(\nabla_{w}\log{}p(x;w))=-E_{x\sim{}p_{\mathcal{D}}(x)}(\nabla_{w}E(x;w))-\nabla_{w}\log{}Z(w)
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximizing the likelihood}
+    Let's calculate $-\nabla_{w}\log{}Z(w)$:
+    \begin{align*}
+        -\nabla_{w}\log{}Z(w)&=-\frac{1}{Z(w)}\nabla_{w}\int\exp(-E(x;w))\mathrm{d}x \\
+        &=-\frac{1}{Z(w)}\int\exp(-E(x;w))(-\nabla_{w}E(x;w))\mathrm{d}x \\
+        &=\int\nabla_{w}E(x;w)p(x;w)\mathrm{d}x=E_{x\sim{}p_{\mathcal{M}}(x)}(\nabla_{w}E(x;w))
+    \end{align*}
+    where the model distribution $p(x;w)$ is written as $p_{\mathcal{M}}(x)$ in the expectation to make it clear. Now we have:
+    \begin{align*}
+        &E_{x\sim{}p_{\mathcal{D}}(x)}(\nabla_{w}\log{}p(x;w)) \\
+        &=-E_{x\sim{}p_{\mathcal{D}}(x)}(\nabla_{w}E(x;w))+E_{x\sim{}p_{\mathcal{M}}(x)}(\nabla_{w}E(x;w))
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximizing the likelihood}
+    \begin{figure}
+        \caption{Illustration of the training of an energy-based model by maximizing the likelihood}
+        \includegraphics[height=0.6\textheight]{Figure_13.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Langevin dynamics}
+    When training an energy-based model, we need to approximate the two terms on the right-hand side. For any given value of $x$, we can evaluate $\nabla_{w}E(x;w)$ using automatic differentiation. For the first term, we can use the training data set to estimate the expectation over $x$:
+    \begin{equation*}
+        E_{x\sim{}p_{\mathcal{D}}(x)}(\nabla_{w}E(x;w))\approx\frac{1}{N}\sum_{n=1}^{N}\nabla_{w}E(x_{n};w)
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Langevin dynamics}
+    For the second term, we need to draw samples from the model distribution. This can be done using Markov chain Monte Carlo methods. One popular approach is called Langevin sampling. We start by drawing an initial value $x^{(0)}$ from a prior distribution, and then we iterate the following Markov chain steps:
+    \begin{equation*}
+        x^{(\tau+1)}=x^{(\tau)}+\eta\nabla_{x}\log{}p(x^{(\tau)};w)+\sqrt{2\eta}\epsilon^{(\tau)}
+    \end{equation*}
+    where $\epsilon^{(\tau)}\sim\mathcal{N}(\epsilon;0,I)$ are independent samples from a zero-mean, unit-covariance Gaussian distribution, and the parameter $\eta$ controls the step size. It can be shown that, in the limits of $\eta\to{}0$ and $\tau\to\infty$, the value of $x^{(\tau)}$ is an independent sample from the distribution $p(x)$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Langevin dynamics}
+    One more word about $\nabla_{x}\log{}p(x;w)$, which is called the score function:
+    \begin{align*}
+        \nabla_{x}\log{}p(x;w)&=\frac{1}{p(x;w)}\nabla_{x}(\frac{1}{Z(w)}\exp(-E(x;w))) \\
+        &=\frac{1}{p(x;w)}\frac{1}{Z(w)}\exp(-E(x;w))(-\nabla_{x}E(x;w)) \\
+        &=-\nabla_{x}E(x;w)
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Langevin dynamics}
+    \begin{algorithm}[H]
+        \caption{Langevin sampling}
+        $x\gets{}x_{0}$\;
+        \For{$\tau\gets{}1$ \KwTo $T$}{
+            $\epsilon\sim\mathcal{N}(\epsilon;0,I)$\;
+            $x\gets{}x+\eta\nabla_{x}\log{}p(x;w)+\sqrt{2\eta}\epsilon$\;
+        }
+        \Return{$x$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Langevin dynamics}
+    We can repeat the Langevin sampling process to generate a set of samples $\{x_{1},\hdots,x_{M}\}$ from the model distribution and then approximate the second term using:
+    \begin{equation*}
+        E_{x\sim{}p_{\mathcal{M}}(x)}(\nabla_{w}E(x;w))\approx\frac{1}{M}\sum_{m=1}^{M}\nabla_{w}E(x_{m};w)
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Langevin dynamics}
+    Running long Markov chains to generate independent samples can be computationally expensive, and so we need to consider practical approximations. One approach is called contrastive divergence:
+    \begin{itemize}
+        \item Running a Monte Carlo chain starting with one of the training data points $x_{n}$.
+        \item Running for only a few steps of Monte Carlo, perhaps even as few as one step.
+        \item The resulting sample will be far from unbiased and will lie close to the data manifold.
+        \item This can prove effective for tasks such as discrimination but is expected to be less effective in learning a generative model.
+    \end{itemize}
+\end{frame}
+
 \end{document}
