@@ -1,0 +1,142 @@
+\documentclass{beamer}
+
+\usepackage[ruled]{algorithm2e}
+\SetKw{KwRet}{return}
+\SetKwRepeat{Repeat}{repeat}{until}
+\usepackage{amsmath}
+\usepackage{mathtools}
+
+\usetheme{AnnArbor}
+\usecolortheme{crane}
+\usefonttheme[onlymath]{serif}
+
+\title{Deep Learning - Foundations and Concepts}
+\subtitle{Chapter 15. Discrete Latent Variables}
+\author{nonlineark@github}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{\texorpdfstring{$K$}{K}-means Clustering}
+
+\begin{frame}
+    \frametitle{$K$-means clustering}
+    \begin{block}{Problem}
+        Suppose we have a data set $\{x^{1},\hdots,x^{N}\}$ consisting of $N$ observations of a $D$-dimensional Euclidean variable $x$. Partition the data set into some number $K$ of clusters, where we will suppose for the moment that the value of $K$ is given.
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \frametitle{$K$-means clustering}
+    \begin{block}{Problem'}
+        Find:
+        \begin{itemize}
+            \item $K$ cluster centers: $\mu_{1},\hdots,\mu_{K}\in\mathbb{R}^{D}$.
+            \item $N$ data point assignment: $r^{1},\hdots,r^{N}\in\{\mathrm{e}_{1},\hdots,\mathrm{e}_{K}\}$.
+        \end{itemize}
+        such that the error function:
+        \begin{equation*}
+            J=\sum_{n=1}^{N}\sum_{k=1}^{K}r^{n}_{k}||x^{n}-\mu_{k}||^{2}
+        \end{equation*}
+        which represents the sum of the squares of the distances of each data point to its assigned cluster center, is minimized.
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \frametitle{$K$-means clustering}
+    We can do this through an iterative procedure:
+    \begin{enumerate}
+        \item Choose some initial values for the $\{\mu_{k}\}$.
+        \item E step: Minimize $J$ with respect to the $\{r^{n}_{k}\}$, keeping the $\{\mu_{k}\}$ fixed.
+        \item M step: Minimize $J$ with respect to the $\{\mu_{k}\}$, keeping the $\{r^{n}_{k}\}$ fixed.
+        \item Go to step 2 until convergence.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{$K$-means clustering}
+    Consider the E step. It's easy to see that we should assign the $n$th data point to the closest cluster center:
+    \begin{equation*}
+        r^{n}_{k}=\begin{cases}
+            1,\qquad\textrm{if }k=\arg\min_{j}||x^{n}-\mu_{j}||^{2} \\
+            0,\qquad\textrm{otherwise}
+        \end{cases}
+    \end{equation*}
+    For the M step:
+    \begin{align*}
+        \frac{\partial{}J}{\partial{}\mu_{k}}&=2\sum_{n=1}^{N}r^{n}_{k}(x^{n}-\mu_{k})^{T} \\
+        \mu_{k}&=\frac{\sum_{n=1}^{N}r^{n}_{k}x^{n}}{\sum_{n=1}^{N}r^{n}_{k}}
+    \end{align*}
+    so $\mu_{k}$ is equal to the mean of all the data points $x_{n}$ assigned to cluster $k$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{$K$-means clustering}
+    \begin{algorithm}[H]
+        \caption{$K$-means algorithm}
+        $\{r^{n}_{k}\}\gets{}0$\;
+        \Repeat{$\{r^{n}_{k}\}=\{\prescript{\mathrm{old}}{}{r}^{n}_{k}\}$}{
+            $\{\prescript{\mathrm{old}}{}{r}^{n}_{k}\}\gets\{r^{n}_{k}\}$\;
+            \For{$n\gets{}1$ \KwTo $N$}{
+                $k\gets\arg\min_{j}||x^{n}-\mu_{j}||^{2}$\;
+                $r^{n}_{k}\gets{}1$\;
+                $r^{n}_{j\ne{}k}\gets{}0$\;
+            }
+            \For{$k\gets{}1$ \KwTo $K$}{
+                $\mu_{k}\gets\frac{\sum_{n=1}^{N}r^{n}_{k}x^{n}}{\sum_{n=1}^{N}r^{n}_{k}}$\;
+            }
+        }
+        \Return{$\{\mu_{k}\},\{r^{n}_{k}\}$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{$K$-means clustering}
+    When updating the prototype vectors, we can also derive a sequential update in which, for each data point $x^{n}$ in turn, we update the nearest prototype $\mu_{k}$ using:
+    \begin{equation*}
+        \prescript{\textrm{new}}{}{\mu}_{k}=\prescript{\textrm{old}}{}{\mu}_{k}+\frac{1}{N_{k}}(x^{n}-\prescript{\textrm{old}}{}{\mu}_{k})
+    \end{equation*}
+    where $N_{k}$ is the number of data points that have so far been used to update $\mu_{k}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Image segmentation}
+    Using the $K$-means algorithm to perform (toy) image segmentation:
+    \begin{itemize}
+        \item Each pixel in an image is a point in a three-dimensional space comprising the intensities of the red, blue and green channels.
+        \item We treat each pixel in the image as a separate data point.
+        \item We can apply the $K$-means algorithm to these pixels, and redraw the image in which we replace each pixel by the center $\mu_{k}$ to which that pixel has been assigned.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Image segmentation}
+    \begin{figure}
+        \caption{Application of the $K$-means clustering algorithm to image segmentation}
+        \includegraphics[width=0.2\textwidth]{Figure_3_a.pdf}
+        \includegraphics[width=0.2\textwidth]{Figure_3_b.pdf}
+        \includegraphics[width=0.2\textwidth]{Figure_3_c.pdf}
+        \includegraphics[width=0.2\textwidth]{Figure_3_d.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Image segmentation}
+    Using the $K$-means algorithm to perform lossy data compression:
+    \begin{itemize}
+        \item For each of the $N$ data points, we store only the identity $k$ of the cluster to which it is assigned.
+        \item We also store the values of the $K$ cluster centers $\{\mu_{k}\}$.
+    \end{itemize}
+    This framework is often called vector quantization, and the vectors $\{\mu_{k}\}$ are called codebook vectors.
+\end{frame}
+
+\end{document}
