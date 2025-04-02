@@ -239,4 +239,59 @@
     }
 \end{frame}
 
+\section{Expectation-Maximization Algorithm}
+
+\begin{frame}
+    \frametitle{Expectation-maximization algorithm}
+    Let's consider the EM algorithm under the more general situation:
+    \begin{itemize}
+        \item There are $N$ observed data points: $x^{1},\hdots,x^{N}\in\mathbb{R}^{D}$.
+        \item The corresponding discrete latent variables $z^{1},\hdots,z^{N}\in\mathbb{R}^{K}$ use a $1$-of-$K$ representation.
+        \item The set of all model parameters is denoted by $\theta$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Expectation-maximization algorithm}
+    The log likelihood function is given by:
+    \begin{equation*}
+        L=\sum_{n=1}^{N}\log{}p(x^{n};\theta)=\sum_{n=1}^{N}\log(\sum_{z^{n}}p(x^{n},z^{n};\theta))
+    \end{equation*}
+    The presence of the summation inside the logarithm results in complicated expressions for the maximum likelihood solution.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Expectation-maximization algorithm}
+    The EM algorithm tries to maximize the log likelihood function through an iterative procedure:
+    \begin{enumerate}
+        \item Choose some starting value for the parameters $\theta_{0}$.
+        \item E step: Calculate the posterior distribution of the latent variables $p(z^{n}|x^{n};\theta^{\textrm{old}})$, so that we can form the expected value of the complete-data log likelihood under this posterior distribution $\mathcal{Q}(\theta,\theta^{\textrm{old}})=\sum_{n=1}^{N}\sum_{z^{n}}p(z^{n}|x^{n};\theta^{\textrm{old}})\log{}p(x^{n},z^{n};\theta)$.
+        \item M step: We maximize this expectation and determine the revised parameter estimate $\theta^{\textrm{new}}=\arg\max_{\theta}\mathcal{Q}(\theta,\theta^{\textrm{old}})$.
+        \item Go to step 2 until convergence.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Expectation-maximization algorithm}
+    \begin{algorithm}[H]
+        \caption{General EM algorithm}
+        \Repeat{convergence}{
+            $\mathcal{Q}(\theta,\theta^{\mathrm{old}})\gets\sum_{n=1}^{N}\sum_{z^{n}}p(z^{n}|x^{n};\theta^{\textrm{old}})\log{}p(x^{n},z^{n};\theta)$\;
+            $\theta^{\textrm{new}}\gets\arg\max_{\theta}\mathcal{Q}(\theta,\theta^{\textrm{old}})$\;
+            $L\gets\sum_{n=1}^{N}\log{}p(x^{n};\theta^{\mathrm{new}})$\;
+            $\theta^{\mathrm{old}}\gets\theta^{\mathrm{new}}$\;
+        }
+        \Return{$\theta^{\mathrm{new}}$}\;
+    \end{algorithm}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Expectation-maximization algorithm}
+    \begin{itemize}
+        \item The use of the expectation may seem somewhat arbitrary, we will see the motivation for this choice when we give a deeper treatment of EM in Section 15.4.
+        \item In the definition of $\mathcal{Q}(\theta,\theta^{\textrm{old}})$, the logarithm acts directly on the joint distribution $p(x^{n},z^{n};\theta)$, and so the corresponding M step maximization will be tractable.
+        \item The EM algorithm has the property that each cycle of EM will increase the incomplete-data log likelihood, as we will see in Section 15.4.
+    \end{itemize}
+\end{frame}
+
 \end{document}
