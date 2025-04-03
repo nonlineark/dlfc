@@ -294,4 +294,27 @@
     \end{itemize}
 \end{frame}
 
+\begin{frame}
+    \frametitle{Gaussian mixtures}
+    Application of this latent-variable view of EM to the specific case of a Gaussian mixture model. For the E step:
+    \begin{align*}
+        &p(z^{n}=\mathrm{e}_{k}|x^{n};\theta^{\textrm{old}})=p(z^{n}_{k}=1|x^{n};\theta^{\textrm{old}}) \\
+        &=\frac{p(z^{n}_{k}=1,x^{n})}{\sum_{k'=1}^{K}p(z^{n}_{k'}=1,x^{n})}=\frac{\pi_{k}^{\textrm{old}}\mathcal{N}(x^{n};\mu_{k}^{\textrm{old}},\Sigma_{k}^{\textrm{old}})}{\sum_{k'=1}^{K}\pi_{k'}^{\textrm{old}}\mathcal{N}(x^{n};\mu_{k'}^{\textrm{old}},\Sigma_{k'}^{\textrm{old}})}=\gamma(z^{n}_{k}) \\
+        &\mathcal{Q}(\theta,\theta^{\textrm{old}})=\sum_{n=1}^{N}\sum_{z^{n}}p(z^{n}|x^{n};\theta^{\textrm{old}})\log{}p(x^{n},z^{n};\theta) \\
+        &=\sum_{n=1}^{N}\sum_{k=1}^{K}\gamma(z^{n}_{k})(\log\pi_{k}+\log\mathcal{N}(x^{n};\mu_{k},\Sigma_{k}))
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Gaussian mixtures}
+    For the M step, we fix $\theta^{\textrm{old}}$ thus $\gamma(z^{n}_{k})$, and maximize $\mathcal{Q}(\theta,\theta^{\textrm{old}})$ with respect to $\theta$:
+    \begin{align*}
+        N_{k}&=\sum_{n=1}^{N}\gamma(z^{n}_{k}) \\
+        0&=\frac{\partial\mathcal{Q}}{\partial\mu_{k}}=\sum_{n=1}^{N}\gamma(z^{n}_{k})(x^{n}-\mu_{k})^{T}\Sigma_{k}^{-1}\implies\mu_{k}=\frac{1}{N_{k}}\sum_{n=1}^{N}\gamma(z^{n}_{k})x^{n} \\
+        0&=\frac{\partial\mathcal{Q}}{\partial\Lambda_{k}}(H)=\frac{1}{2}\sum_{n=1}^{N}\gamma(z^{n}_{k})\mathrm{tr}((\Sigma_{k}-(x^{n}-\mu_{k})(x^{n}-\mu_{k})^{T})H) \\
+        &\implies\Sigma_{k}=\frac{1}{N_{k}}\sum_{n=1}^{N}\gamma(z^{n}_{k})(x^{n}-\mu_{k})(x^{n}-\mu_{k})^{T} \\
+        \lambda&=\frac{\partial\mathcal{Q}}{\partial\pi_{k}}=\frac{N_{k}}{\pi_{k}}\implies\pi_{k}=\frac{N_{k}}{N}
+    \end{align*}
+\end{frame}
+
 \end{document}
