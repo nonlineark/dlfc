@@ -67,7 +67,7 @@
     Consider the E step. It's easy to see that we should assign the $n$th data point to the closest cluster center:
     \begin{equation*}
         r^{n}_{k}=\begin{cases}
-            1,\qquad\textrm{if }k=\arg\min_{j}||x^{n}-\mu_{j}||^{2} \\
+            1,\qquad\textrm{if }k=\mathrm{argmin}_{j}||x^{n}-\mu_{j}||^{2} \\
             0,\qquad\textrm{otherwise}
         \end{cases}
     \end{equation*}
@@ -87,7 +87,7 @@
         \Repeat{$\{r^{n}_{k}\}=\{\prescript{\mathrm{old}}{}{r}^{n}_{k}\}$}{
             $\{\prescript{\mathrm{old}}{}{r}^{n}_{k}\}\gets\{r^{n}_{k}\}$\;
             \For{$n\gets{}1$ \KwTo $N$}{
-                $k\gets\arg\min_{j}||x^{n}-\mu_{j}||^{2}$\;
+                $k\gets\mathrm{argmin}_{j}||x^{n}-\mu_{j}||^{2}$\;
                 $r^{n}_{k}\gets{}1$\;
                 $r^{n}_{j\ne{}k}\gets{}0$\;
             }
@@ -266,7 +266,7 @@
     \begin{enumerate}
         \item Choose some starting value for the parameters $\theta_{0}$.
         \item E step: Calculate the posterior distribution of the latent variables $p(z^{n}|x^{n};\theta^{\textrm{old}})$, so that we can form the expected value of the complete-data log likelihood under this posterior distribution $\mathcal{Q}(\theta,\theta^{\textrm{old}})=\sum_{n=1}^{N}\sum_{z^{n}}p(z^{n}|x^{n};\theta^{\textrm{old}})\log{}p(x^{n},z^{n};\theta)$.
-        \item M step: We maximize this expectation and determine the revised parameter estimate $\theta^{\textrm{new}}=\arg\max_{\theta}\mathcal{Q}(\theta,\theta^{\textrm{old}})$.
+        \item M step: We maximize this expectation and determine the revised parameter estimate $\theta^{\textrm{new}}=\mathrm{argmax}_{\theta}\mathcal{Q}(\theta,\theta^{\textrm{old}})$.
         \item Go to step 2 until convergence.
     \end{enumerate}
 \end{frame}
@@ -277,7 +277,7 @@
         \caption{General EM algorithm}
         \Repeat{convergence}{
             $\mathcal{Q}(\theta,\theta^{\mathrm{old}})\gets\sum_{n=1}^{N}\sum_{z^{n}}p(z^{n}|x^{n};\theta^{\textrm{old}})\log{}p(x^{n},z^{n};\theta)$\;
-            $\theta^{\textrm{new}}\gets\arg\max_{\theta}\mathcal{Q}(\theta,\theta^{\textrm{old}})$\;
+            $\theta^{\textrm{new}}\gets\mathrm{argmax}_{\theta}\mathcal{Q}(\theta,\theta^{\textrm{old}})$\;
             $L\gets\sum_{n=1}^{N}\log{}p(x^{n};\theta^{\mathrm{new}})$\;
             $\theta^{\mathrm{old}}\gets\theta^{\mathrm{new}}$\;
         }
@@ -299,7 +299,7 @@
     Application of this latent-variable view of EM to the specific case of a Gaussian mixture model. For the E step:
     \begin{align*}
         &p(z^{n}=\mathrm{e}_{k}|x^{n};\theta^{\textrm{old}})=p(z^{n}_{k}=1|x^{n};\theta^{\textrm{old}}) \\
-        &=\frac{p(z^{n}_{k}=1,x^{n})}{\sum_{k'=1}^{K}p(z^{n}_{k'}=1,x^{n})}=\frac{\pi_{k}^{\textrm{old}}\mathcal{N}(x^{n};\mu_{k}^{\textrm{old}},\Sigma_{k}^{\textrm{old}})}{\sum_{k'=1}^{K}\pi_{k'}^{\textrm{old}}\mathcal{N}(x^{n};\mu_{k'}^{\textrm{old}},\Sigma_{k'}^{\textrm{old}})}=\gamma(z^{n}_{k}) \\
+        &=\frac{p(z^{n}_{k}=1,x^{n};\theta^{\textrm{old}})}{\sum_{k'=1}^{K}p(z^{n}_{k'}=1,x^{n};\theta^{\textrm{old}})}=\frac{\pi_{k}^{\textrm{old}}\mathcal{N}(x^{n};\mu_{k}^{\textrm{old}},\Sigma_{k}^{\textrm{old}})}{\sum_{k'=1}^{K}\pi_{k'}^{\textrm{old}}\mathcal{N}(x^{n};\mu_{k'}^{\textrm{old}},\Sigma_{k'}^{\textrm{old}})}=\gamma(z^{n}_{k}) \\
         &\mathcal{Q}(\theta,\theta^{\textrm{old}})=\sum_{n=1}^{N}\sum_{z^{n}}p(z^{n}|x^{n};\theta^{\textrm{old}})\log{}p(x^{n},z^{n};\theta) \\
         &=\sum_{n=1}^{N}\sum_{k=1}^{K}\gamma(z^{n}_{k})(\log\pi_{k}+\log\mathcal{N}(x^{n};\mu_{k},\Sigma_{k}))
     \end{align*}
@@ -313,6 +313,85 @@
         0&=\frac{\partial\mathcal{Q}}{\partial\mu_{k}}=\sum_{n=1}^{N}\gamma(z^{n}_{k})(x^{n}-\mu_{k})^{T}\Sigma_{k}^{-1}\implies\mu_{k}=\frac{1}{N_{k}}\sum_{n=1}^{N}\gamma(z^{n}_{k})x^{n} \\
         0&=\frac{\partial\mathcal{Q}}{\partial\Lambda_{k}}(H)=\frac{1}{2}\sum_{n=1}^{N}\gamma(z^{n}_{k})\mathrm{tr}((\Sigma_{k}-(x^{n}-\mu_{k})(x^{n}-\mu_{k})^{T})H) \\
         &\implies\Sigma_{k}=\frac{1}{N_{k}}\sum_{n=1}^{N}\gamma(z^{n}_{k})(x^{n}-\mu_{k})(x^{n}-\mu_{k})^{T} \\
+        \lambda&=\frac{\partial\mathcal{Q}}{\partial\pi_{k}}=\frac{N_{k}}{\pi_{k}}\implies\pi_{k}=\frac{N_{k}}{N}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Relation to $K$-means}
+    We can derive the $K$-means algorithm as a particular limit of EM for Gaussian mixtures. Consider a Gaussian mixture model in which:
+    \begin{itemize}
+        \item The mixing coefficients are fixed to $\frac{1}{K}$.
+        \item The covariance matrices of the mixture components are given by $\epsilon{}I$, where $\epsilon$ is a fixed constant.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Relation to $K$-means}
+    Consider the limit $\epsilon\to{}0+$. For the E step:
+    \begin{align*}
+        \gamma(z^{n}_{k})&=\frac{\exp(-\frac{||x^{n}-\mu_{k}^{\textrm{old}}||^{2}}{2\epsilon})}{\sum_{k'=1}^{K}\exp(-\frac{||x^{n}-\mu_{k'}^{\textrm{old}}||^{2}}{2\epsilon})} \\
+        &\to\begin{cases}
+            1,\qquad\textrm{if }k=\mathrm{argmin}_{j}||x^{n}-\mu_{j}^{\textrm{old}}||^{2} \\
+            0,\qquad\textrm{otherwise}
+        \end{cases}
+    \end{align*}
+    Thus, in this limit, we obtain a hard assignment of data points to clusters, just as in the $K$-means algorithm, so that $\gamma(z^{n}_{k})\to{}r^{n}_{k}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Relation to $K$-means}
+    The expected complete-data log likelihood becomes:
+    \begin{align*}
+        \epsilon\mathcal{Q}(\theta,\theta^{\textrm{old}})&=\epsilon\sum_{n=1}^{N}\sum_{k=1}^{K}\gamma(z^{n}_{k})(-\log{K}+\log\mathcal{N}(x^{n};\mu_{k},\epsilon{}I)) \\
+        &\to-\frac{1}{2}\sum_{n=1}^{N}\sum_{k=1}^{K}r^{n}_{k}||x^{n}-\mu_{k}||^{2}
+    \end{align*}
+    We see that in this limit, maximizing the expected complete-data log likelihood is equivalent to minimizing the error measure $J$ for the $K$-means algorithm.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Relation to $K$-means}
+    For the M step:
+    \begin{equation*}
+        \mu_{k}=\frac{\sum_{n=1}^{N}\gamma(z^{n}_{k})x^{n}}{\sum_{n=1}^{N}\gamma(z^{n}_{k})}\to\frac{\sum_{n=1}^{N}r^{n}_{k}x^{n}}{\sum_{n=1}^{N}r^{n}_{k}}
+    \end{equation*}
+    The EM re-estimation equation for the $\mu_{k}$ then reduces to the $K$-means result.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Mixtures of Bernoulli distributions}
+    As a further example of mixture modelling and to illustrate the EM algorithm in a different context, we now discuss mixtures of descrete binary variables described by Bernoulli distributions:
+    \begin{itemize}
+        \item Let $z$ be a $K$-dimensional binary random variable having a $1$-of-$K$ respresentation:
+        \begin{itemize}
+            \item $p(z)=\prod_{k=1}^{K}\pi_{k}^{z_{k}}$, where $0\le\pi_{k}\le{}1$ and $\sum_{k=1}^{K}\pi_{k}=1$.
+        \end{itemize}
+        \item Let $x\in\mathbb{R}^{D}$ be a set of $D$ binary variables, each of which is governed by a Bernoulli distribution given a particular value for $z$:
+        \begin{itemize}
+            \item $\mathrm{Bern}(x;\mu)=\prod_{d=1}^{D}\mu_{d}^{x_d}(1-\mu_{d})^{1-x_{d}}$.
+            \item $p(x|z)=\prod_{k=1}^{K}\mathrm{Bern}(x;\mu^{k})^{z_{k}}$.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Mixtures of Bernoulli distributions}
+    Application of the EM algorithm to the specific case of a Bernoulli mixture model. For the E step:
+    \begin{align*}
+        &\gamma(z^{n}_{k})=p(z^{n}=\mathrm{e}_{k}|x^{n};\theta^{\textrm{old}})=p(z^{n}_{k}=1|x^{n};\theta^{\textrm{old}}) \\
+        &=\frac{p(z^{n}_{k}=1,x^{n};\theta^{\textrm{old}})}{\sum_{k'=1}^{K}p(z^{n}_{k'}=1,x^{n};\theta^{\textrm{old}})}=\frac{\pi_{k}^{\textrm{old}}\mathrm{Bern}(x^{n};(\mu^{k})^{\textrm{old}})}{\sum_{k'=1}^{K}\pi_{k'}^{\textrm{old}}\mathrm{Bern}(x^{n};(\mu^{k'})^{\textrm{old}})} \\
+        &\mathcal{Q}(\theta,\theta^{\textrm{old}})=\sum_{n=1}^{N}\sum_{z^{n}}p(z^{n}|x^{n};\theta^{\textrm{old}})\log{}p(x^{n},z^{n};\theta) \\
+        &=\sum_{n=1}^{N}\sum_{k=1}^{K}\gamma(z^{n}_{k})(\log\pi_{k}+\log\mathrm{Bern}(x^{n};\mu^{k}))
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Mixtures of Bernoulli distributions}
+    For the M step, we fix $\theta^{\textrm{old}}$ thus $\gamma(z^{n}_{k})$, and maximize $\mathcal{Q}(\theta,\theta^{\textrm{old}})$ with respect to $\theta$:
+    \begin{align*}
+        N_{k}&=\sum_{n=1}^{N}\gamma(z^{n}_{k}) \\
+        0&=\frac{\partial\mathcal{Q}}{\partial\mu^{k}_{d}}=\frac{1}{\mu^{k}_{d}(1-\mu^{k}_{d})}\sum_{n=1}^{N}\gamma(z^{n}_{k})(x^{n}_{d}-\mu^{k}_{d}) \\
+        &\implies\mu^{k}_{d}=\frac{1}{N_{k}}\sum_{n=1}^{N}\gamma(z^{n}_{k})x^{n}_{d}\implies\mu^{k}=\frac{1}{N_{k}}\sum_{n=1}^{N}\gamma(z^{n}_{k})x^{n} \\
         \lambda&=\frac{\partial\mathcal{Q}}{\partial\pi_{k}}=\frac{N_{k}}{\pi_{k}}\implies\pi_{k}=\frac{N_{k}}{N}
     \end{align*}
 \end{frame}
