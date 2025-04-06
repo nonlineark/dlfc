@@ -396,4 +396,170 @@
     \end{align*}
 \end{frame}
 
+\section{Evidence Lower Bound}
+
+\begin{frame}
+    \frametitle{Evidence lower bound}
+    We now present an even more general perspective on the EM algorithm by deriving a lower bound on the log likelihood function, which is known as the evidence lower bound or ELBO. Again, the assumptions are:
+    \begin{itemize}
+        \item There is a probabilistic model in which we denote all the observed variables by $X$ and all the hidden variables by $Z$.  The model is governed by a set of parameters denoted by $\theta$.
+        \item Direct optimization of $p(X;\theta)$ is difficult.
+        \item Optimization of the complete-data likelihood function $p(X,Z;\theta)$ is significantly easier.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Evidence lower bound}
+    For any distribution $q(Z)$ defined over the latent variables, we have:
+    \begin{align*}
+        \log{}p(X;\theta)&=\sum_{Z}q(Z)\log{}p(X;\theta) \\
+        &=\sum_{Z}q(Z)\log\frac{p(X,Z;\theta)}{p(Z|X;\theta)} \\
+        &=\sum_{Z}q(Z)\log\frac{\frac{p(X,Z;\theta)}{q(Z)}}{\frac{p(Z|X;\theta)}{q(Z)}} \\
+        &=\sum_{Z}q(Z)\log\frac{p(X,Z;\theta)}{q(Z)}-\sum_{Z}q(Z)\log\frac{p(Z|X;\theta)}{q(Z)} \\
+        &=\mathcal{L}(q,\theta)+\mathrm{KL}(q(Z)||p(Z|X;\theta))
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Evidence lower bound}
+    We see that $\mathrm{KL}(q(Z)||p(Z|X;\theta))$ is the Kullback-Leibler divergence between $q(Z)$ and the posterior distribution $p(Z|X;\theta)$, thus $\mathrm{KL}(q(Z)||p(Z|X;\theta))\ge{}0$, with equality if and only if $q(Z)=p(Z|X;\theta)$. It also follows that:
+    \begin{equation*}
+        \log{}p(X;\theta)\ge\mathcal{L}(q,\theta)
+    \end{equation*}
+    In other words that $\mathcal{L}(q,\theta)$ is a lower bound on $\log{}p(X;\theta)$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM revisited}
+    In the E step, the lower bound $\mathcal{L}(q,\theta^{\textrm{old}})$ is maximized with respect to $q(Z)$ while holding $\theta^{\textrm{old}}$ fixed. It's easy to see that the solution to this maximization problem is $q(Z)=p(Z|X;\theta)$.
+    \begin{figure}
+        \caption{Illustration of the E step of the EM algorithm}
+        \includegraphics{Figure_14.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM revisited}
+    In the M step, the distribution $q(Z)$ is held fixed and the lower bound $\mathcal{L}(q,\theta)$ is maximized with respect to $\theta$ to give some new value $\theta^{\textrm{new}}$:
+    \begin{itemize}
+        \item This will cause the lower bound $\mathcal{L}$ to increase, which will necessarily cause the corresponding log likelihood function to increase.
+        \item Because $q(Z)=p(Z|X;\theta^{\textrm{old}})$, it will not equal the new posterior distribution $p(Z|X;\theta^{\textrm{new}})$, and hence there will be a non-zero Kullback-Leibler divergence.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM revisited}
+    \begin{figure}
+        \caption{Illustration of the M step of the EM algorithm}
+        \includegraphics{Figure_15.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM revisited}
+    Let's take a closer look at the function we try to maximize in the M step:
+    \begin{align*}
+        &\mathcal{L}(q,\theta)=\sum_{Z}p(Z|X;\theta^{\textrm{old}})\log\frac{p(X,Z;\theta)}{p(Z|X;\theta^{\textrm{old}})} \\
+        &=\sum_{Z}p(Z|X;\theta^{\textrm{old}})\log{}p(X,Z;\theta)-\sum_{Z}p(Z|X;\theta^{\textrm{old}})\log{}p(Z|X;\theta^{\textrm{old}}) \\
+        &=\mathcal{Q}(\theta,\theta^{\textrm{old}})+\textrm{const}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM revisited}
+    We see that:
+    \begin{itemize}
+        \item Here we recognize $\mathcal{Q}(\theta,\theta^{\textrm{old}})$ as the expected complete-data log likelihood, and it is therefore the quantity that is being maximized in the M step.
+        \item The variable $\theta$ over which we are optimizing appears only inside the logarithm, and by our assumption, the complete-data likelihood function $p(X,Z;\theta)$ is significantly easier to optimize.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM revisited}
+    \begin{figure}
+        \caption{The operation of the EM algorithm viewed in the space of parameters}
+        \includegraphics[height=0.7\textheight]{Figure_16.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM revisited}
+    After each E step, the lower bound curve $\mathcal{L}(q,\theta)$ becomes tangent to the log likelihood curve $\log{}p(X;\theta)$ at $\theta^{\textrm{old}}$:
+    \begin{align*}
+        \frac{\partial}{\partial\theta}\bigg|_{\theta=\theta^{\textrm{old}}}\mathcal{L}(q,\theta)&=\sum_{Z}\frac{\partial}{\partial\theta}\bigg|_{\theta=\theta^{\textrm{old}}}p(Z|X;\theta^{\textrm{old}})\log\frac{p(X,Z;\theta)}{p(Z|X;\theta^{\textrm{old}})} \\
+        &=\frac{1}{p(X;\theta^{\textrm{old}})}\sum_{Z}\frac{\partial}{\partial\theta}\bigg|_{\theta=\theta^{\textrm{old}}}p(X,Z;\theta) \\
+        &=\frac{1}{p(X;\theta^{\textrm{old}})}\frac{\partial}{\partial\theta}\bigg|_{\theta=\theta^{\textrm{old}}}\sum_{Z}p(X,Z;\theta) \\
+        &=\frac{1}{p(X;\theta^{\textrm{old}})}\frac{\partial}{\partial\theta}\bigg|_{\theta=\theta^{\textrm{old}}}p(X;\theta) \\
+        &=\frac{\partial}{\partial\theta}\bigg|_{\theta=\theta^{\textrm{old}}}\log{}p(X;\theta)
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Independent and identically distributed data}
+    For the particular case of an i.i.d. data set, we have $p(X,Z;\theta)=\prod_{n=1}^{N}p(x^{n},z^{n};\theta)$. Further, we have:
+    \begin{align*}
+        p(X;\theta)&=\sum_{Z}p(X,Z;\theta) \\
+        &=\sum_{z^{1}}\cdots\sum_{z^{N}}p(x^{1},z^{1};\theta)\cdots{}p(x^{N},z^{N};\theta) \\
+        &=\sum_{z^{1}}p(x^{1},z^{1};\theta)\cdots\sum_{z^{N}}p(x^{N},z^{N};\theta) \\
+        &=p(x^{1};\theta)\cdots{}p(x^{N};\theta) \\
+        p(Z|X;\theta)&=\frac{p(X,Z;\theta)}{p(X;\theta)}=\frac{\prod_{n=1}^{N}p(x^{n},z^{n};\theta)}{\prod_{n=1}^{N}p(x^{n};\theta)}=\prod_{n=1}^{N}p(z^{n}|x^{n};\theta)
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Independent and identically distributed data}
+    \begin{align*}
+        \mathcal{Q}(\theta,\theta^{\textrm{old}})&=\sum_{Z}p(Z|X;\theta^{\textrm{old}})\log{}p(X,Z;\theta) \\
+        &=\sum_{z^{1}}\cdots\sum_{z^{N}}p(z^{1}|x^{1};\theta^{\textrm{old}})\cdots{}p(z^{N}|x^{N};\theta^{\textrm{old}})\sum_{n=1}^{N}\log{}p(x^{n},z^{n};\theta) \\
+        &=\sum_{n=1}^{N}\sum_{z^{1}}\cdots\sum_{z^{N}}p(z^{1}|x^{1};\theta^{\textrm{old}})\cdots{}p(z^{N}|x^{N};\theta^{\textrm{old}})\log{}p(x^{n},z^{n};\theta) \\
+        &=\sum_{n=1}^{N}\sum_{z^{n}}p(z^{n}|x^{n};\theta^{\textrm{old}})\log{}p(x^{n},z^{n};\theta)
+    \end{align*}
+    This is exactly the form that was given when we formally introduced the EM algorithm in Section 15.3. We see that the form given here is more general. 
+\end{frame}
+
+\begin{frame}
+    \frametitle{Parameter priors}
+    We can also use the EM algorithm to maximize the postierior distribution $p(\theta|X)$ for models in which we have introduced a prior $p(\theta)$ over the parameters:
+    \begin{align*}
+        \log{}p(\theta|X)&=\log{}p(X,\theta)-\log{}p(X) \\
+        &=\log{}p(X|\theta)+\log{}p(\theta)-\log{}p(X) \\
+        &=\mathcal{L}(q,\theta)+\mathrm{KL}(q(Z)||p(Z|X,\theta))+\log{}p(\theta)-\log{}p(X) \\
+        &\ge\mathcal{L}(q,\theta)+\log{}p(\theta)-\log{}p(X)
+    \end{align*}
+    The E step is the same as the standard EM algorithm, while the M-step equations are modified through the introduction of the prior term $\log{}p(\theta)$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Generalized EM}
+    For complex models it may be the case that either the E step or the M step, or indeed both, remain intractable:
+    \begin{itemize}
+        \item The generalized EM algorithm addresses the problem of an intractable M step:
+        \begin{itemize}
+            \item One way would be to use gradient-based iterative optimization algorithm during the M step.
+            \item The expectation conditional maximization algorithm involves making several constrained optimizations within each M step.
+        \end{itemize}
+        \item We can similarly generalize the E step of the EM algorithm by performing a partial, rather than complete, optimization of $\mathcal{L}(q,\theta)$ with respect to $q(Z)$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequential EM}
+    Incremental form of EM:
+    \begin{itemize}
+        \item In the E step, we just re-evaluate the responsibilities for one data point.
+        \item In the M step, update the required sufficient statistics incrementally.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Sequential EM}
+    For intance, for a Gaussian mixture, suppose we perform an update for data point $m$:
+    \begin{align*}
+        \gamma^{\textrm{new}}(z^{m}_{k})&=\cdots \\
+        N^{\textrm{new}}_{k}&=N^{\textrm{old}}_{k}-\gamma^{\textrm{old}}(z^{m}_{k})+\gamma^{\textrm{new}}(z^{m}_{k}) \\
+        \mu^{\textrm{new}}_{k}&=\mu^{\textrm{old}}_{k}+\frac{\gamma^{\textrm{new}}(z^{m}_{k})-\gamma^{\textrm{old}}(z^{m}_{k})}{N^{\textrm{new}}_{k}}(x^{m}-\mu^{\textrm{old}}_{k})
+    \end{align*}
+    The corresponding results for the covariances and the mixing coefficients are analogous.
+\end{frame}
+
 \end{document}
