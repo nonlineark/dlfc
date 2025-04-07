@@ -1,0 +1,160 @@
+\documentclass{beamer}
+
+\usepackage{amsmath}
+
+\usetheme{AnnArbor}
+\usecolortheme{crane}
+\usefonttheme[onlymath]{serif}
+
+\title{Deep Learning - Foundations and Concepts}
+\subtitle{Chapter 16. Continuous Latent Variables}
+\author{nonlineark@github}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Principal Component Analysis}
+
+\begin{frame}
+    \frametitle{Maximum variance formulation}
+    \begin{block}{Problem}
+        Consider a data set of observations $\{x_{n}\}$ where $n=1,\hdots,N$, and $x_{n}$ is a Euclidean variable with dimensionality $D$. Our goal is to project the data onto a space having dimensionality $M<D$ while maximizing the variance of the projected data.
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum variance formulation}
+    Let's calculate the variance of the projected data on a unit direction $v$:
+    \begin{align*}
+        y_{n}&=x_{n}\cdot{}v \\
+        E(y_{n})&=\frac{1}{N}\sum_{n=1}^{N}y_{n}=E(x_{n})\cdot{}v \\
+        \mathrm{var}(y_{n})&=\frac{1}{N}\sum_{n=1}^{N}(y_{n}-E(y_{n}))^{2}=\frac{1}{N}\sum_{n=1}^{N}((x_{n}-E(x_{n}))\cdot{}v)^{2} \\
+        &=\frac{1}{N}\sum_{n=1}^{N}v^{T}(x_{n}-E(x_{n}))(x_{n}-E(x_{n}))^{T}v=v^{T}Sv
+    \end{align*}
+    where $S$ is the data covariance matrix defined by:
+    \begin{equation*}
+        S=\frac{1}{N}\sum_{n=1}^{N}(x_{n}-E(x_{n}))(x_{n}-E(x_{n}))^{T}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum variance formulation}
+    Let's find the unit direction $v_{1}$ for the largest variance. Suppose that $\lambda_{1}\ge\cdots\ge\lambda_{D}$ are the $D$ eigenvalues of $S$, and their corresponding orthonormal eigenvectors are $u_{1},\hdots,u_{D}$ respectively. Let $\Lambda=\mathrm{diag}(\lambda_{1},\hdots,\lambda_{D})$, $U=\begin{pmatrix}
+        u_{1}&\cdots&u_{D}
+    \end{pmatrix}$. We have:
+    \begin{align*}
+        v_{1}&=U\alpha_{1} \\
+        v_{1}^{T}Sv_{1}&=\alpha_{1}^{T}U^{T}SU\alpha_{1}=\alpha_{1}^{T}\Lambda\alpha_{1}\le\lambda_{1}||\alpha_{1}||^{2}=\lambda_{1}
+    \end{align*}
+    The equality holds if and only if $v_{1}$ is an eigenvector corresponds to the largest eigenvalue $\lambda_{1}$. Without loss of generality, we could set $v_{1}=u_{1}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum variance formulation}
+    Let's find the unit direction $v_{2}$ for the second largest variance. Because $v_{2}$ is orthogonal to $v_{1}$ thus $u_{1}$, in the coordinate system formed by the orthonormal basis $u_{1},\hdots,u_{D}$, its first coordinate is $0$:
+    \begin{align*}
+        v_{2}&=U\alpha_{2} \\
+        v_{2}^{T}Sv_{2}&=\alpha_{2}^{T}\Lambda\alpha_{2}\le\lambda_{2}||\alpha_{2}||^{2}=\lambda_{2}
+    \end{align*}
+    Again, the equality holds if and only if $v_{2}$ is an eigenvector corresponds to the second largest eigenvalue $\lambda_{2}$. Without loss of generality, we could set $v_{2}=u_{2}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum variance formulation}
+    If we consider the general case of an $M$-dimensional projection space, the optimal linear projection for which the variance of the projected data is maximized is now defined by the $M$ eigenvectors $u_{1},\hdots,u_{M}$ of the data covariance matrix $S$ corresponding to the $M$ largest eigenvalues $\lambda_{1},\hdots,\lambda_{M}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Minimum-error formulation}
+    We now discuss an alternative formulation of PCA based on projection error minimization:
+    \begin{itemize}
+        \item We want to find an orthonormal basis $u_{1},\hdots,u_{D}$, where the $M$-dimensional linear subspace can be presented by the first $M$ of the basis vectors.
+        \item Each data point $x_{n}$ is approximated by $\tilde{x}_{n}=\sum_{i=1}^{M}z_{ni}u_{i}+\sum_{i=M+1}^{D}b_{i}u_{i}$.
+    \end{itemize}
+    such that the squared distance between the original data point $x_{n}$ and its approximation $\tilde{x}_{n}$, averaged over the data set:
+    \begin{equation*}
+        J=\frac{1}{N}\sum_{n=1}^{N}||x_{n}-\tilde{x}_{n}||^{2}
+    \end{equation*}
+    is minimized.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Minimum-error formulation}
+    \begin{align*}
+        0&=\frac{\partial{}J}{\partial{}z_{ni}}=-\frac{2}{N}(x_{n}^{T}u_{i}-z_{ni})\implies{}z_{ni}=x_{n}^{T}u_{i} \\
+        0&=\frac{\partial{}J}{\partial{}b_{i}}=-\frac{2}{N}\sum_{n=1}^{N}(x_{n}^{T}u_{i}-b_{i})\implies{}b_{i}=(E(x_{n}))^{T}u_{i} \\
+        x_{n}-\tilde{x}_{n}&=\sum_{i=M+1}^{D}((x_{n}-E(x_{n}))\cdot{}u_{i})u_{i} \\
+        J&=\frac{1}{N}\sum_{n=1}^{N}||x_{n}-\tilde{x}_{n}||^{2}=\sum_{i=M+1}^{D}u_{i}^{T}Su_{i}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Minimum-error formulation}
+    We recognize that $J$ is the total variance of the projected data on the unit directions $u_{M+1},\hdots,u_{D}$. To minimize $J$, $u_{M+1},\hdots,u_{D}$ should be the eigenvectors corresponding to the smallest $D-M$ eigenvalues of $S$, and hence the eigenvectors defining the principal subspace are those corresponding to the $M$ largest eigenvalues.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data compression}
+    One application for PCA is data compression:
+    \begin{equation*}
+        \tilde{x}_{n}=\sum_{i=1}^{M}(x_{n}\cdot{}u_{i})u_{i}+\sum_{i=M+1}^{D}(E(x_{n})\cdot{}u_{i})u_{i}=E(x_{n})+\sum_{i=1}^{M}((x_{n}-E(x_{n}))\cdot{}u_{i})u_{i}
+    \end{equation*}
+    This represents a compression of the data set, because for each data point we have replaced the $D$-dimensional vector $x_{n}$ with an $M$-dimensional vector.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data whitening}
+    Suppose we have a data set of observations $\{x^{n}\}$ where $n=1,\hdots,N$, and $x^{n}$ is a Euclidean variable with dimensionality $D$. We often want to transform the data set to standardize certain of its properties. For example, making a linear re-scaling of the individual variables such that each variable has zero mean and unit variance:
+    \begin{align*}
+        \bar{x}_{d}&=\frac{1}{N}\sum_{n=1}^{N}x^{n}_{d} \\
+        \sigma^{2}_{d}&=\frac{1}{N}\sum_{n=1}^{N}(x^{n}_{d}-\bar{x}_{d})^{2} \\
+        \tilde{x}^{n}_{d}&=\frac{x^{n}_{d}-\bar{x}_{d}}{\sigma_{d}}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data whitening}
+    The covariance matrix for the standardized data has components:
+    \begin{equation*}
+        \rho_{ij}=E(\tilde{x}^{n}_{i}\tilde{x}^{n}_{j})-E(\tilde{x}^{n}_{i})E(\tilde{x}^{n}_{j})=\frac{1}{N}\sum_{n=1}^{N}\frac{x^{n}_{i}-\bar{x}_{i}}{\sigma_{i}}\frac{x^{n}_{j}-\bar{x}_{j}}{\sigma_{j}}
+    \end{equation*}
+    If two components $x_{i}$ and $x_{j}$ of the data are perfectly correlated, then $\rho_{ij}=1$, and if they are uncorrelated, then $\rho_{ij}=0$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Data whitening}
+    Using PCA we can make a more substantial normalization of the data to give it zero mean and unit covariance, so that different variables become decorrelated:
+    \begin{align*}
+        y^{n}&=\Lambda^{-\frac{1}{2}}U^{T}(x^{n}-\bar{x}) \\
+        E(y^{n})&=0 \\
+        E(y^{n}(y^{n})^{T})&=\frac{1}{N}\sum_{n=1}^{N}\Lambda^{-\frac{1}{2}}U^{T}(x^{n}-\bar{x})(x^{n}-\bar{x})^{T}U\Lambda^{-\frac{1}{2}} \\
+        &=\Lambda^{-\frac{1}{2}}U^{T}SU\Lambda^{-\frac{1}{2}}=\Lambda^{-\frac{1}{2}}\Lambda\Lambda^{-\frac{1}{2}}=I \\
+        \mathrm{cov}(y^{n})&=E(y^{n}(y^{n})^{T})-E(y^{n})(E(y^{n}))^{T}=I
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{High-dimensional data}
+    In some applications of PCA, the number of data points is smaller than the dimensionality of the data space. For such cases, we can calculate the eigenvalues and eigenvectors more efficiently this way:
+    \begin{itemize}
+        \item Let $X=\begin{pmatrix}
+            x_{1}-\bar{x}&\cdots&x_{N}-\bar{x}
+        \end{pmatrix}^{T}$, then $S=\frac{1}{N}X^{T}X$.
+        \item Calculate the eigenvalues and eigenvectors of $\frac{1}{N}XX^{T}$ instead, say $\frac{1}{N}XX^{T}v=\lambda{}v$.
+        \item Then $\lambda$ is an eigenvalue of $S$ and $u=X^{T}v$ is an eigenvector of $S$.
+        \begin{itemize}
+            \item $\frac{1}{\sqrt{N\lambda}}u$ is the corresponding unit eigenvector (suppose $v$ is already a unit vector).
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\end{document}
