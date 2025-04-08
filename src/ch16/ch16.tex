@@ -157,4 +157,170 @@
     \end{itemize}
 \end{frame}
 
+\section{Probabilistic Latent Variables}
+
+\begin{frame}
+    \frametitle{Probabilistic PCA}
+    PCA can also be expressed as the maximum likelihood solution of a probabilistic latent variable model, known as probabilistic PCA:
+    \begin{itemize}
+        \item A probabilistic PCA model represents a constrained form of a Gaussian distribution.
+        \item We can derive an EM algorithm for PCA that is computationally efficient.
+        \item The combination of a probabilistic model and EM allows us to deal with missing values in the data set.
+        \item Mixtures of probabilistic PCA models can be formulated in a principled way and trained using the EM algorithm.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Probabilistic PCA}
+    \begin{itemize}
+        \item The existence of a likelihood function allows direct comparison with other probabilistic density models.
+        \item Probabilistic PCA can be used to model class-conditional densities and hence be applied to classification problems.
+        \item A probabilistic PCA model can be run generatively to provide samples from the distribution.
+        \item Probabilistic PCA forms the basis for a Bayesian treatment of PCA.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Generative model}
+    Probabilistic PCA is a simple example of the linear Gaussian framework:
+    \begin{itemize}
+        \item Introduce an explicit $M$-dimensional latent variable $z$ corresponding to the principal component subspace:
+        \begin{itemize}
+            \item $p(z)=\mathcal{N}(z;0,I)$.
+        \end{itemize}
+        \item The $D$-dimensional observed variable $x$ is conditioned on the value of the latent variable:
+        \begin{itemize}
+            \item $p(x|z)=\mathcal{N}(x;Wz+\mu,\sigma^{2}I)$, where $W\in\mathbb{R}^{D\times{}M}$ and $\mu\in\mathbb{R}^{D}$.
+        \end{itemize}
+        \item The probabilistic PCA model is an example of a naive Bayes model, as $p(x|z)=\prod_{d=1}^{D}\mathcal{N}(x_{d};W_{d}z+\mu_{d},\sigma^{2})$, where $W_{d}$ is the $d$th row of $W$.
+        \item We can view the probabilistic PCA model from a generative viewpoint: $x=Wz+\mu+\epsilon$, where $z\sim\mathcal{N}(z;0,I)$ is an $M$-dimensional Gaussian latent variable, and $\epsilon\sim\mathcal{N}(\epsilon;0,\sigma^{2}I)$ is a $D$-dimensional Gaussian noise.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Likelihood function}
+    The marginal distribution is again Gaussian, and is given by:
+    \begin{equation*}
+        p(x)=\mathcal{N}(x;\mu,WW^{T}+\sigma^{2}I)=\mathcal{N}(x;\mu,C)
+    \end{equation*}
+    The predictive distribution $p(x)$ is governed by the parameters $\mu$, $W$ and $\sigma^{2}$. However, there is redundancy in this parameterization corresponding to rotations of the latent space coordinates.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum likelihood}
+    Given a data set $\{x_{n}\}$, the log likelihood function is given by:
+    \begin{align*}
+        L&=\sum_{n=1}^{N}\log{}p(x_{n}) \\
+        &=-\frac{ND}{2}\log{}2\pi-\frac{N}{2}\log\det{}C-\frac{1}{2}\sum_{n=1}^{N}(x_{n}-\mu)^{T}C^{-1}(x_{n}-\mu)
+    \end{align*}
+    It's easy to maximize $L$ with respect to $\mu$:
+    \begin{equation*}
+        0=\frac{\partial{}L}{\partial\mu}=\sum_{n=1}^{N}(x_{n}-\mu)^{T}C^{-1}\implies\mu_{ML}=\frac{1}{N}\sum_{n=1}^{N}x_{n}=\bar{x}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum likelihood}
+    Maximization with respect to $W$ and $\sigma^{2}$ is more complex but nonetheless has an exact closed-form solution:
+    \begin{align*}
+        \sigma^{2}_{ML}&=\frac{1}{D-M}\sum_{i=M+1}^{D}\lambda_{i} \\
+        W_{ML}&=U_{M}(\Lambda_{M}-\sigma^{2}_{ML}I)^{\frac{1}{2}}R
+    \end{align*}
+    where:
+    \begin{itemize}
+        \item $\lambda_{1}\ge\cdots\ge\lambda_{D}$ are the eigenvalues of $S$.
+        \item $u_{1},\hdots,u_{D}$ are the corresponding eigenvectors of $S$.
+        \item $\Lambda_{M}=\mathrm{diag}(\lambda_{1},\hdots,\lambda_{M})$.
+        \item $U_{M}=\begin{pmatrix}
+            u_{1}&\cdots&u_{M}
+        \end{pmatrix}$.
+        \item $R$ is an arbitrary $M\times{}M$ orthogonal matrix.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum likelihood}
+    It is worth taking a moment to study the form of the covariance matrix $C$:
+    \begin{equation*}
+        C=W_{ML}W_{ML}^{T}+\sigma^{2}_{ML}I=U_{M}(\Lambda_{M}-\sigma^{2}_{ML}I)U_{M}^{T}+\sigma^{2}_{ML}I
+    \end{equation*}
+    Since the variance of the predictive distribution along some direction specified by the unit vector $v$ is given by $v^{T}Cv$, the variance along the direction of the eigenvectors is given by:
+    \begin{equation*}
+        u_{i}^{T}Cu_{i}=\begin{cases}
+            (\lambda_{i}-\sigma^{2}_{ML})+\sigma^{2}_{ML}=\lambda_{i}&\textrm{if }1\le{}i\le{}M \\
+            \sigma^{2}_{ML}&\textrm{if }M+1\le{}i\le{}D
+        \end{cases}
+    \end{equation*}
+    In other words, this model correctly captures the variance of the data along the principal axes and approximates the variance in all remaining directions with a single average value $\sigma^{2}_{ML}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum likelihood}
+    The relation between probabilistic PCA and conventional PCA. The posterior distribution in latent space $p(z|x)$ is also a Gaussian:
+    \begin{align*}
+        p(z|x)&=\mathcal{N}(z;M^{-1}W_{ML}^{T}(x-\mu_{ML}),\sigma^{2}_{ML}M^{-1}) \\
+        M&=W_{ML}^{T}W_{ML}+\sigma^{2}_{ML}I
+    \end{align*}
+    If we take the limit $\sigma^{2}_{ML}\to{}0$, then the posterior mean reduces to:
+    \begin{equation*}
+        (W_{ML}^{T}W_{ML})^{-1}W_{ML}^{T}(x-\bar{x})=R^{T}\Lambda_{M}^{-\frac{1}{2}}U_{M}^{T}(x-\bar{x})
+    \end{equation*}
+    which represents an orthogonal projection of the data point onto the latent space, and so we recover the standard PCA model.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Maximum likelihood}
+    The probabilistic PCA model defines a multivariate Gaussian distribution in which the number of independent parameters can be controlled while still allowing the model to capture the dominant correlations in the data:
+    \begin{itemize}
+        \item The number of parameters scales quadratically with $D$ for the general Gaussian distribution.
+        \item If we restrict the covariance matrix to be diagonal, then it can no longer express any correlations between them.
+        \item For the probabilistic PCA model, the number of degrees of freedom in the covariance matrix $C$ is given by: $DM+1-\frac{M(M-1)}{2}$:
+        \begin{itemize}
+            \item The number of independent parameters in this model therefore only grows linearly with $D$, for fixed $M$.
+            \item If we take $M=D-1$, then we recover the standard result for a full covariance Gaussian.
+            \item If $M=0$, the model is equivalent to the isotropic covariance case.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Factor analysis}
+    Factor analysis is a linear Gaussian latent variable model:
+    \begin{align*}
+        p(z)&=\mathcal{N}(z;0,I) \\
+        p(x|z)&=\mathcal{N}(x;Wz+\mu,\Psi)
+    \end{align*}
+    where $\Psi=\mathrm{diag}(\psi_{1},\hdots,\psi_{D})$ is a $D\times{}D$ diagonal matrix.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Factor analysis}
+    \begin{itemize}
+        \item Factor analysis is an example of a naive Bayes model, as $p(x|z)=\prod_{d=1}^{D}\mathcal{N}(x_{d};W_{d}z+\mu_{d},\psi_{d})$, where $W_{d}$ is the $d$th row of $W$.
+        \item As with probabilistic PCA, factor analysis is invariant to rotations in the latent space.
+        \item Another difference between probabilistic PCA and factor analysis is their behavior under transformations of the data set:
+        \begin{itemize}
+            \item Probabilistic PCA is covariant under a rotation of the axes of the data space, since $R\sigma^{2}IR^{T}=\sigma^{2}I$.
+            \item Factory analysis is covariant under component-wise re-scaling of the data variables, since $\Phi\Psi\Phi^{T}$ is still diagonal when $\Phi$ is diagonal.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Independent component analysis}
+    In independent component analysis, the data variables are assumed to be linear mixtures of the latent variables, and the latent variables are assumed non-Gaussian and mutually independent:
+    \begin{align*}
+        p(z)&=\prod_{m=1}^{M}p(z_{m}) \\
+        x&=Az
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Kalman filters}
+    \begin{figure}
+        \caption{A linear dynamical system, or Kalman filter}
+        \includegraphics{Figure_9.pdf}
+    \end{figure}
+\end{frame}
+
 \end{document}
