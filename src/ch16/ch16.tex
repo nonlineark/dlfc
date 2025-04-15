@@ -323,4 +323,87 @@
     \end{figure}
 \end{frame}
 
+\section{Evidence Lower Bound}
+
+\begin{frame}
+    \frametitle{Evidence lower bound}
+    Consider a model $p(x,z;w)$ with an observed variable $x$, a latent variable $z$, and a learnable parameter vector $w$. If we introduce an arbitrary distribution $q(z)$ over the latent variable then we can write the log likelihood function $\log{}p(x;w)$ as:
+    \begin{align*}
+        \log{}p(x;w)&=\int{}q(z)\log\frac{p(x,z;w)}{q(z)}\mathrm{d}z-\int{}q(z)\log\frac{p(z|x;w)}{q(z)}\mathrm{d}z \\
+        &=\mathcal{L}(q,w)+\mathrm{KL}(q(z)||p(z|x;w)) \\
+        &\ge\mathcal{L}(q,w)
+    \end{align*}
+    we see that $\mathcal{L}(q,w)$ forms a lower bound on the log likelihood, known as the evidence lower bound or ELBO.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Evidence lower bound}
+    We can maximize the log likelihood function using a two-stage iterative procedure called the expectation maximization algorithm, or EM algorithm:
+    \begin{itemize}
+        \item We first initialize the parameters $w^{(\textrm{old})}$.
+        \item In the E step we keep $w^{(\textrm{old})}$ fixed and we maximize the lower bound with respect to $q(z)$:
+        \begin{itemize}
+            \item This is achieved when $q(z)=p(z|x;w^{(\textrm{old})})$ for which the Kullback-Leibler divergence is zero.
+        \end{itemize}
+        \item In the M step we keep this choice of $q(z)$ fixed and maximize $\mathcal{L}(q,w)$ with respect to $w$:
+        \begin{itemize}
+            \item This is equal to maximizing $\mathcal{Q}(w,w^{(\textrm{old})})=\int{}p(z|x;w^{(\textrm{old})})\log{}p(x,z;w)\mathrm{d}z$.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Evidence lower bound}
+    For the particular case of i.i.d. data set, we have:
+    \begin{align*}
+        \mathcal{L}(q,w)&=\sum_{n=1}^{N}\int{}q(z_{n})\log\frac{p(x_{n},z_{n};w)}{q(z_{n})}\mathrm{d}z_{n} \\
+        \mathcal{Q}(w,w^{(\textrm{old})})&=\sum_{n=1}^{N}\int{}p(z_{n}|x_{n};w^{(\textrm{old})})\log{}p(x_{n},z_{n};w)\mathrm{d}z_{n}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Expectation maximization}
+    We can now use the EM algorithm to learn the parameters of the probabilitic PCA model:
+    \begin{align*}
+        p(z_{n})&=\mathcal{N}(z_{n};0,I)=\frac{1}{\sqrt{2\pi}^{K}}\exp(-\frac{1}{2}||z_{n}||^{2}) \\
+        p(x_{n}|z_{n};W,\mu,\sigma^{2})&=\mathcal{N}(x_{n};Wz_{n}+\mu,\sigma^{2}I) \\
+        &=\frac{1}{\sqrt{2\pi\sigma^{2}}^{D}}\exp(-\frac{1}{2\sigma^{2}}||x_{n}-Wz_{n}-\mu||^{2})
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Expectation maximization}
+    \begin{align*}
+        \mathcal{Q}&=\sum_{n=1}^{N}E(\log{}p(z_{n})\log{}p(x_{n}|z_{n};W,\mu,\sigma^{2})) \\
+        &=-\frac{NK}{2}\log{}2\pi-\frac{1}{2}\sum_{n=1}^{N}E(||z_{n}||^{2})-\frac{ND}{2}\log{}2\pi\sigma^{2} \\
+        &\quad-\frac{1}{2\sigma^{2}}\sum_{n=1}^{N}E(||x_{n}-Wz_{n}-\mu||^{2}) \\
+        &=-\frac{NK}{2}\log{}2\pi-\frac{1}{2}\sum_{n=1}^{N}\mathrm{tr}(E(z_{n}z_{n}^{T}))-\frac{ND}{2}\log{}2\pi\sigma^{2} \\
+        &\quad-\frac{1}{2\sigma^{2}}\sum_{n=1}^{N}(||x_{n}-\mu||^{2}-2(x_{n}-\mu)^{T}WE(z_{n})+\mathrm{tr}(W^{T}WE(z_{n}z_{n}^{T})))
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Expectation maximization}
+    We already know that the exact maximum likelihood solution for $\mu$ is given by the sample mean $\bar{x}$. For the E step:
+    \begin{align*}
+        p(z_{n}|x_{n})&=\mathcal{N}(z_{n};M^{-1}W^{T}_{\textrm{old}}(x_{n}-\bar{x}),\sigma^{2}_{\textrm{old}}M^{-1}) \\
+        M&=W^{T}_{\textrm{old}}W_{\textrm{old}}+\sigma^{2}_{\textrm{old}}I \\
+        E(z_{n})&=M^{-1}W^{T}_{\textrm{old}}(x_{n}-\bar{x}) \\
+        E(z_{n}z_{n}^{T})&=\mathrm{cov}(z_{n})+E(z_{n})(E(z_{n}))^{T}=\sigma^{2}_{\textrm{old}}M^{-1}+E(z_{n})(E(z_{n}))^{T}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Expectation maximization}
+    For the M step:
+    \begin{align*}
+        0&=\frac{\partial\mathcal{Q}}{\partial{}W}(H)=\frac{1}{\sigma^{2}}\sum_{n=1}^{N}\mathrm{tr}((E(z_{n})(x_{n}-\bar{x})^{T}-E(z_{n}z_{n}^{T})W^{T})H) \\
+        &\implies{}W=(\sum_{n=1}^{N}(x_{n}-\bar{x})(E(z_{n}))^{T})(\sum_{n=1}^{N}E(z_{n}z_{n}^{T}))^{-1} \\
+        0&=\frac{\partial\mathcal{Q}}{\partial\sigma}=-\frac{ND}{\sigma}+\frac{1}{\sigma^{3}}\sum_{n=1}^{N}(||x_{n}-\bar{x}||^{2}-2(x_{n}-\bar{x})^{T}WE(z_{n}) \\
+        &\qquad+\mathrm{tr}(W^{T}WE(z_{n}z_{n}^{T}))) \\
+        &\implies\sigma^{2}=\frac{1}{ND}\sum_{n=1}^{N}(||x_{n}-\bar{x}||^{2}-2(x_{n}-\bar{x})^{T}WE(z_{n}) \\
+        &\qquad+\mathrm{tr}(W^{T}WE(z_{n}z_{n}^{T})))
+    \end{align*}
+\end{frame}
+
 \end{document}
