@@ -406,4 +406,83 @@
     \end{align*}
 \end{frame}
 
+\begin{frame}
+    \frametitle{EM for PCA}
+    We can take the limit $\sigma^{2}\to{}0$, corresponding to standard PCA. Let $X=\begin{pmatrix}
+        x_{1}-\bar{x}&\cdots&x_{N}-\bar{x}
+    \end{pmatrix}^{T}$ and $\Omega=\begin{pmatrix}
+        E(z_{1})&\cdots&E(z_{N})
+    \end{pmatrix}$, we have:
+    \begin{align*}
+        M&=W^{T}_{\textrm{old}}W_{\textrm{old}} \\
+        \Omega&=M^{-1}W^{T}_{\textrm{old}}X^{T}=(W^{T}_{\textrm{old}}W_{\textrm{old}})^{-1}W^{T}_{\textrm{old}}X^{T} \\
+        W&=X^{T}\Omega^{T}(\Omega\Omega^{T})^{-1}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM for PCA}
+    We see that:
+    \begin{itemize}
+        \item The E step involves an orthogonal projection of the data points onto the current estimate for the principal subspace.
+        \item The M step represents a re-estimation of the principal subspace to minimize the reconstruction error in which the projections are fixed.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM for PCA}
+    \begin{figure}
+        \caption{Synthetic data illustrating the EM algorithm for PCA}
+        \includegraphics[width=0.25\textwidth]{Figure_10_a.pdf}
+        \includegraphics[width=0.25\textwidth]{Figure_10_b.pdf}
+        \includegraphics[width=0.25\textwidth]{Figure_10_c.pdf}
+        \includegraphics[width=0.25\textwidth]{Figure_10_d.pdf}
+        \includegraphics[width=0.25\textwidth]{Figure_10_e.pdf}
+        \includegraphics[width=0.25\textwidth]{Figure_10_f.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM for factor analysis}
+    We can also use the EM algorithm to learn the parameters of the factor analysis model:
+    \begin{align*}
+        &p(z_{n})=\mathcal{N}(z_{n};0,I)=\frac{1}{\sqrt{2\pi}^{K}}\exp(-\frac{1}{2}||z_{n}||^{2}) \\
+        &p(x_{n}|z_{n};W,\mu,\Psi)=\mathcal{N}(x_{n};Wz_{n}+\mu,\Psi) \\
+        &=\frac{1}{\sqrt{2\pi}^{D}}\frac{1}{\sqrt{\det\Psi}}\exp(-\frac{1}{2}(x_{n}-Wz_{n}-\mu)^{T}\Psi^{-1}(x_{n}-Wz_{n}-\mu))
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM for factor analysis}
+    \begin{align*}
+        \mathcal{Q}&=\sum_{n=1}^{N}E(\log{}p(z_{n})\log{}p(x_{n}|z_{n};W,\mu,\Psi)) \\
+        &=-\frac{N(K+D)}{2}\log{}2\pi-\frac{1}{2}\sum_{n=1}^{N}\mathrm{tr}(E(z_{n}z_{n}^{T}))-\frac{N}{2}\log\det\Psi \\
+        &\qquad-\frac{1}{2}\sum_{n=1}^{N}(x_{n}-\mu)^{T}\Psi^{-1}(x_{n}-\mu)+\sum_{n=1}^{N}(x_{n}-\mu)^{T}\Psi^{-1}WE(z_{n}) \\
+        &\qquad-\frac{1}{2}\sum_{n=1}^{N}\mathrm{tr}(W^{T}\Psi^{-1}WE(z_{n}z_{n}^{T}))
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM for factor analysis}
+    We already know that the exact maximum likelihood solution for $\mu$ is give by the sample mean $\bar{x}$. For the E step:
+    \begin{align*}
+        p(z_{n}|x_{n})&=\mathcal{N}(z_{n};M^{-1}(W^{T}_{\textrm{old}}\Psi^{-1}_{\textrm{old}}(x_{n}-\bar{x})),M^{-1}) \\
+        M&=W^{T}_{\textrm{old}}\Psi^{-1}_{\textrm{old}}W_{\textrm{old}}+I \\
+        E(z_{n})&=M^{-1}W^{T}_{\textrm{old}}\Psi^{-1}_{\textrm{old}}(x_{n}-\bar{x}) \\
+        E(z_{n}z_{n}^{T})&=\mathrm{cov}(z_{n})+E(z_{n})(E(z_{n}))^{T}=M^{-1}+E(z_{n})(E(z_{n}))^{T}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{EM for factor analysis}
+    For the M step:
+    \begin{align*}
+        0&=\frac{\partial\mathcal{Q}}{\partial{}W}H=\sum_{n=1}^{N}\mathrm{tr}((E(z_{n})(x_{n}-\bar{x})^{T}-E(z_{n}z_{n}^{T})W^{T})\Psi^{-1}H) \\
+        &\implies{}W=(\sum_{n=1}^{N}(x_{n}-\bar{x})(E(z_{n}))^{T})(\sum_{n=1}^{N}E(z_{n}z_{n}^{T}))^{-1} \\
+        0&=\frac{\partial\mathcal{Q}}{\partial\Lambda}H=\frac{N}{2}\mathrm{tr}(\Psi{}H)-\frac{N}{2}\mathrm{tr}(SH)+\sum_{n=1}^{N}\mathrm{tr}(WE(z_{n})(x_{n}-\bar{x})^{T}H) \\
+        &\qquad-\frac{1}{2}\sum_{n=1}^{N}\mathrm{tr}(WE(z_{n}z_{n}^{T})W^{T}H) \\
+        &\implies\Psi=\mathrm{diag}(S-W\frac{1}{N}\sum_{n=1}^{N}E(z_{n})(x_{n}-\bar{x})^{T})
+    \end{align*}
+\end{frame}
+
 \end{document}
