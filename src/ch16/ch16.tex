@@ -485,4 +485,121 @@
     \end{align*}
 \end{frame}
 
+\section{Nonlinear Latent Variable Models}
+
+\begin{frame}
+    \frametitle{Nonlinear latent variable models}
+    We can use the flexibility of deep neural networks to represent more complex transformations from the latent space to the data space:
+    \begin{align*}
+        p_{z}(z)&=\mathcal{N}(z;0,I) \\
+        x&=g(z;w)
+    \end{align*}
+    where $w$ represents the weights and biases.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Nonlinear latent variable models}
+    For learning:
+    \begin{itemize}
+        \item The likelihood function is given by: $p_{x}(x)=p_{z}(z(x))|\det{}J(x)|$, where $J(x)=\frac{\partial(z_{1},\hdots,z_{D})}{\partial(x_{1},\hdots,x_{D})}$ is the Jacobian matrix.
+        \item We need the inverse $z=g^{-1}(x;w)$ of the neural network function, but for most neural networks this inverse will not be well defined.
+    \end{itemize}
+    For sampling:
+    \begin{itemize}
+        \item Sampling from such a model is straightforward because we can generate samples from $p_{z}(z)$ and then transform each of them using the neural network function to give corresponding samples of $x$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Nonlinear manifolds}
+    Consider the situation in which $z$ has dimensionality $M$ and $x$ has dimensionality $D$, where $M<D$. In this case the distribution over $x$ is confined to a manifold.
+    \begin{figure}
+        \includegraphics{Figure_11.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Nonlinear manifolds}
+    However, this framework assigns zero probability density to any data vector that does not lie exactly on the manifold, which is a problem for gradient-based learning. To address this, we define a conditional distribution across the entire data space, whose parameters are given by the output of the neural network:
+    \begin{align*}
+        p(z)&=\mathcal{N}(z;0,I) \\
+        p(x|z;w)&=\mathcal{N}(x;g(z;w),\sigma^{2}I)
+    \end{align*}
+    This is assuming that $x$ is a vector of continuous variables, and $g(z;w)$ has linear output-unit functions.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Nonlinear manifolds}
+    \begin{figure}
+        \caption{Illustration of a nonlinear latent-variable model for a one-dimensional latent space and a two-dimensional data space}
+        \includegraphics[height=0.4\textheight]{Figure_13_a.pdf}
+        \includegraphics[height=0.4\textheight]{Figure_13_b.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Likelihood function}
+    Now suppose we wish to fit the model to an observed data set by maximizng the likelihood function. One approach for evaluating the likelihood function would be to draw samples from the latent space distribution:
+    \begin{equation*}
+        p(x;w)=\int{}p(x|z;w)p(z)\mathrm{d}z=\frac{1}{K}\sum_{k=1}^{K}p(x|z_{k};w)
+    \end{equation*}
+    where $z_{k}\sim{}p(z)$. However, the value of $K$ needed for effective training will typically be far too high to be practical.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Discrete data}
+    If the observed data set comprises independent binary variables then we can use a conditional distribution of the form:
+    \begin{align*}
+        p(x|z;w)&=\prod_{d=1}^{D}g_{d}(z;w)^{x_{d}}(1-g_{d}(z;w))^{1-x_{d}} \\
+        g_{d}(z;w)&=\sigma(a_{d}(z;w))
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Discrete data}
+    For one-hot encoded categorical variables, we can use a multinomial distribution:
+    \begin{align*}
+        p(x|z;w)&=\prod_{d=1}^{D}g_{d}(z;w)^{x_d} \\
+        g_{d}(z;w)&=\frac{\exp(a_{d}(z;w))}{\sum_{d'=1}^{D}\exp(a_{d'}(z;w))}
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Four approaches to generative modelling}
+    \begin{itemize}
+        \item Nonlinear latent-variable models based on deep neural networks offer a highly flexible framework for building generative models.
+        \item However, we have also identified some challenges associated with training such models that force us to develop more sophisticated techniques than those needed for linear models.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Four approaches to generative modelling}
+    \begin{itemize}
+        \item Generative adversarial networks (GANs):
+        \begin{itemize}
+            \item Relax the requirement for the network mapping to be invertible.
+            \item Abandon the concept of a likelihood function and instead introduce a second neural network whose function is to provide a training signal for the generative network.
+        \end{itemize}
+        \item Variational autoencoders (VAEs):
+        \begin{itemize}
+            \item Use a second neural network whose role is to approximate the posterior distribution over the latent variables.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Four approaches to generative modelling}
+    \begin{itemize}
+        \item Normalizing flows:
+        \begin{itemize}
+            \item The dimensionality of the latent space is set to be equal to that of the data space and the generative neural network is modified so that it becomes invertible.
+            \item The likelihood function can be evaluated without approximation.
+        \end{itemize}
+        \item Diffusion models:
+        \begin{itemize}
+            \item Use a network that learns to transform a sample from the prior distribution into a sample from the data distribution through a sequence of denoising steps.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
 \end{document}
