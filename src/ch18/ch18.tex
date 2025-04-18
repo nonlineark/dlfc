@@ -103,4 +103,51 @@
     \end{itemize}
 \end{frame}
 
+\section{Autoregressive Flows}
+
+\begin{frame}
+    \frametitle{Masked autoregressive flows}
+    In masked autoregressive flows (MAFs), the transformation function from the latent space into the data space is given by:
+    \begin{equation*}
+        x_{d}=h(z_{d},g_{d}(x_{1:d-1};w_{d}))
+    \end{equation*}
+    where:
+    \begin{itemize}
+        \item $h$ is the coupling function, which is chosen to be easily invertible with respect to $z_{d}$.
+        \item $g_{d}$ is the conditioner, which is typically represented by a deep neural network.
+        \item $x_{1:d-1}$ denotes $x_{1},\hdots,x_{d-1}$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Masked autoregressive flows}
+    The overall transformation is easily invertible:
+    \begin{equation*}
+        z_{d}=h^{-1}(x_{d},g_{d}(x_{1:d-1};w_{d}))
+    \end{equation*}
+    \begin{itemize}
+        \item The inverse can be performed efficiently on modern hardware since $z_{1},\hdots,z_{D}$ can be evaluated in parallel.
+        \item The Jocobian matrix is a lower-triangular matrix whose determinant can also be evaluated efficiently.
+        \item However, sampling from this model must be done sequentially because the values of $x_{1},\hdots,x_{d-1}$ must be evaluated before $x_{d}$ can be computed.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Inverse autoregressive flows}
+    To avoid this inefficient sampling, we can instead define an inverse autoregressive flow (IAF) given by:
+    \begin{equation*}
+        x_{d}=h(z_{d},\tilde{g}_{d}(z_{1:d-1};w_d))
+    \end{equation*}
+    The inverse is given by:
+    \begin{equation*}
+        z_{d}=h^{-1}(x_{d},\tilde{g}_{d}(z_{1:d-1};w_d))
+    \end{equation*}
+    We see that:
+    \begin{itemize}
+        \item Sampling is now efficient since the evaluation of the elements $x_{1},\hdots,x_{D}$ can be performed in parallel.
+        \item The Jocobian matrix is again a lower-triangular matrix whose determinant can be evaluated efficiently.
+        \item The inverse calculations are intrinsically sequential and slow.
+    \end{itemize}
+\end{frame}
+
 \end{document}
