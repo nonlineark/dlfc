@@ -135,4 +135,60 @@
     \href{https://lilianweng.github.io/posts/2017-08-20-gan/}{Further references}.
 \end{frame}
 
+\section{Image GANs}
+
+\begin{frame}
+    \frametitle{CycleGAN}
+    \begin{figure}
+        \caption{Examples of image translation using a CycleGAN}
+        \includegraphics[height=0.7\textheight]{Figure_6.png}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{CycleGAN}
+    The aim is to learn two bijective mappings, one that goes from the domain $X$ of photographs to the domain $Y$ of Monet paintings and one in the reverse direction:
+    \begin{itemize}
+        \item The generator $g_{X}(y;w_{X})$ takes as input a sample painting $y\in{}Y$ and generates a corresponding synthetic photograph.
+        \item The discriminator $d_{X}(x;\phi_{X})$ distinguishes between synthetic and real photographs.
+        \item The generator $g_{Y}(x;w_{Y})$ takes as input a sample photograph $x\in{}X$ and generates a corresponding synthetic painting.
+        \item The discriminator $d_{Y}(y;\phi_{Y})$ distinguishes between synthetic and real paintings.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{CycleGAN}
+    To ensure that the generated painting looks like the photograph and vice versa, we introduce an additional term in the loss function called the cycle consistency error:
+    \begin{align*}
+        E_{\textrm{cyc}}(w_{X},w_{Y})&=\frac{1}{N_{X}}\sum_{n\in{}X}||g_{X}(g_{Y}(x_{n}))-x_{n}||_{1} \\
+        &+\frac{1}{N_{Y}}\sum_{n\in{}Y}||g_{Y}(g_{X}(y_{n}))-y_{n}||_{1}
+    \end{align*}
+    where $||\cdot||_{1}$ denotes the L1 norm. The total error function is given by:
+    \begin{equation*}
+        E_{\textrm{GAN}}(w_{X},\phi_{X})+E_{\textrm{GAN}}(w_{Y},\phi_{Y})+\eta{}E_{\textrm{cyc}}(w_{X},w_{Y})
+    \end{equation*}
+    where the coefficient $\eta$ determines the relative importance of the GAN errors and the cycle consistency error.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Representation learning}
+    GANs can also be used for representation learning in which rich statistical structure in a data set is revealed through unsupervised learning. The latent space has become organized in ways that are semantically meaningful.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Representation learning}
+    \begin{figure}
+        \caption{Taking smooth walks through latent space between randomly generated locations}
+        \includegraphics[height=0.6\textheight]{Figure_9.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Representation learning}
+    \begin{figure}
+        \caption{An example of vector arithmetic in the latent space of a trained GAN}
+        \includegraphics{Figure_10.pdf}
+    \end{figure}
+\end{frame}
+
 \end{document}
