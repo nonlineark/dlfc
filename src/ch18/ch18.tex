@@ -150,4 +150,102 @@
     \end{itemize}
 \end{frame}
 
+\section{Continuous Flows}
+
+\begin{frame}
+    \frametitle{Neural differential equations}
+    Consider a residual network:
+    \begin{equation*}
+        z^{(t+1)}=z^{(t)}+f(z^{(t)};w)
+    \end{equation*}
+    where $t$ labels the layers in the network. Now we consider a small increment $\epsilon$ in the layer variable $t$:
+    \begin{equation*}
+        z^{(t+\epsilon)}=z^{(t)}+\epsilon{}f(z^{(t)};w)
+    \end{equation*}
+    Taking the limit $\epsilon\to{}0$, the hidden-unit activation vector becomes a function $z(t)$ of a continous variable $t$, and we can express the evolution of this vector through the network as a differential equation:
+    \begin{equation*}
+        \frac{\mathrm{d}z(t)}{\mathrm{d}t}=f(z(t);w)
+    \end{equation*}
+    where $t$ is often referred to as time.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Neural differential equations}
+    If we denote the input to the network by the vector $z(0)$, then the output $z(T)$ is obtained by integration of the differential equation:
+    \begin{equation*}
+        z(T)=z(0)+\int_{0}^{T}f(z(t);w)\mathrm{d}t
+    \end{equation*}
+    This integral can be evaluated using standard numerical integration packages.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Neural differential equations}
+    \begin{figure}
+        \caption{Comparison of a conventional layered network with a neural differential equation}
+        \includegraphics{Figure_5.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Neural ODE backpropagation}
+    Let us assume that we are given a data set comprising values of the input vector $z(0)$ along with an associated output target vector and a loss function $L$ that depends on the output vector $z(T)$.
+    \bigbreak
+    One approach to training a neural ODE would be to use automatic differentiation to differentiate through all of the operations performed by the ODE solver during the forward pass. Although this is straightforward to do, it is costly from a memory perspective and is not optimal in terms of controlling numerical error.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Neural ODE backpropagation}
+    For any two time values $0\le{}t_{1}\le{}t_{2}\le{}T$ and a network parameter vector $w$, we define a map $g^{t_{1}:t_{2}}_{w}:\mathbb{R}^{D}\to\mathbb{R}^{D}$, also known as the phase flow map of our neural ODE:
+    \begin{itemize}
+        \item There is a solution for our neural ODE whose graph passes through the point $(t_{1},z_{1})$ when the network parameter vector is $w$. Let's denote this solution by $\phi(t)$.
+        \item Then $g^{t_{1}:t_{2}}_{w}(z_{1})$ is given by the value of this particular solution at $t_{2}$: $g^{t_{1}:t_{2}}_{w}(z_{1})=\phi(t_{2})$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Neural ODE backpropagation}
+    Now our training objective is defined as:
+    \begin{equation*}
+        L(z_{T})=L(g^{0:T}_{w}(z_{0}))
+    \end{equation*}
+    It can be shown that:
+    \begin{align*}
+        \frac{\partial{}g^{0:T}_{w}(z(0))}{\partial{}w}&=\int_{0}^{T}\frac{\partial{}g^{t:T}_{w}(z(t))}{\partial{}z}\frac{\partial{}f(z(t);w)}{\partial{}w}\mathrm{d}t \\
+        \frac{\partial{}L(w)}{\partial{}w}&=\int_{0}^{T}(\frac{\partial{}L(z(T))}{\partial{}z_{T}}\frac{\partial{}g^{t:T}_{w}(z(t))}{\partial{}z})\frac{\partial{}f(z(t);w)}{\partial{}w}\mathrm{d}t \\
+        &=\int_{0}^{T}\frac{\partial{}(L\circ{}g^{t:T}_{w})(z(t))}{\partial{}z}\frac{\partial{}f(z(t);w)}{\partial{}w}\mathrm{d}t
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Neural ODE backpropagation}
+    Let $a(t)=\frac{\partial{}(L\circ{}g^{t:T}_{w})(z(t))}{\partial{}z}$, it can be shown that:
+    \begin{equation*}
+        \frac{\mathrm{d}a(t)}{\mathrm{d}t}=-a(t)\frac{\partial{f(z(t);w)}}{\partial{}z}
+    \end{equation*}
+    This is called the adjoint equation. The initial condition is given by:
+    \begin{equation*}
+        a(T)=\frac{\partial{}L(z(T))}{\partial{}z_{T}}
+    \end{equation*}
+    \href{https://ilya.schurov.com/post/adjoint-method/}{Further references}.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Neural ODE flows}
+    If we define a base distribution over the input vector $p(z(0))$ then the neural ODE propagates this forward through time to give a distribution $p(z(t))$ for each value of $t$, leading to a distribution over the output vector $p(z(T))$. It can be shown that the transformation for the density can be evaluated by integrating a differential equation given by:
+    \begin{equation*}
+        \frac{\mathrm{d}\log{}p(z(t))}{\mathrm{d}t}=-\mathrm{tr}(\frac{\partial{}f(z(t);w)}{\partial{}z})
+    \end{equation*}
+    \href{https://arxiv.org/pdf/1806.07366}{Further references}.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Neural ODE flows}
+    \begin{figure}
+        \caption{Illustration of a continuous normalizing flow}
+        \includegraphics{Figure_6_a.pdf}
+        \includegraphics{Figure_6_b.pdf}
+        \includegraphics{Figure_6_c.pdf}
+    \end{figure}
+\end{frame}
+
 \end{document}
