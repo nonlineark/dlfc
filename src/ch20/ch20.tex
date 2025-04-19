@@ -1,0 +1,88 @@
+\documentclass{beamer}
+
+\usepackage{amsmath}
+
+\usetheme{AnnArbor}
+\usecolortheme{crane}
+\usefonttheme[onlymath]{serif}
+
+\title{Deep Learning - Foundations and Concepts}
+\subtitle{Chapter 20. Diffusion Models}
+\author{nonlineark@github}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Forward Encoder}
+
+\begin{frame}
+    \frametitle{Forward encoder}
+    Suppose we take an image from the training set, which we will denote by $x$, and blend it with Gaussian noise independently for each pixel to give a noise-corrupted image $z_{1}$ defined by:
+    \begin{align*}
+        z_{1}&=\sqrt{1-\beta_{1}}x+\sqrt{\beta_{1}}\epsilon_{1}\qquad\epsilon_{1}\sim\mathcal{N}(\epsilon_{1};0,I) \\
+        q(z_{1}|x)&=\mathcal{N}(z_{1};\sqrt{1-\beta_{1}}x,\beta_{1}I)
+    \end{align*}
+    where $\beta_{1}<1$ is the variance of the noise distribution.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Forward encoder}
+    We then repeat the process with additional independent Gaussian noise steps to give a sequence of increasingly noisy images $z_{1},\hdots,z_{T}$:
+    \begin{align*}
+        z_{t}&=\sqrt{1-\beta_{t}}z_{t-1}+\sqrt{\beta_{t}}\epsilon_{t}\qquad\epsilon_{t}\sim\mathcal{N}(\epsilon_{t};0,I) \\
+        q(z_{t}|z_{t-1})&=\mathcal{N}(z_{t};\sqrt{1-\beta_{t}}z_{t-1},\beta_{t}I)
+    \end{align*}
+    The values of the variance parameters $\beta_{t}\in(0,1)$ are set by hand and are typically chosen such that the variance values increase through the chain according to a prescribed schedule such that $\beta_{1}<\cdots<\beta_{T}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Diffusion kernel}
+    Using induction, it's straightforward to verify that:
+    \begin{align*}
+        z_{t}&=\sqrt{\alpha_{t}}x+\sqrt{1-\alpha_{t}}\epsilon_{t}\qquad\epsilon_{t}\sim\mathcal{N}(\epsilon_{t};0,I) \\
+        q(z_{t}|x)&=\mathcal{N}(z_{t};\sqrt{\alpha_{t}}x,(1-\alpha_{t})I)
+    \end{align*}
+    where we have defined:
+    \begin{equation*}
+        \alpha_{t}=\prod_{\tau=1}^{t}(1-\beta_{\tau})
+    \end{equation*}
+    We call $q(z_{t}|x)$ the diffusion kernel. After many steps the image becomes indistinguishable from Gaussian noise, and in the limit $T\to\infty$ we have:
+    \begin{equation*}
+        q(z_{T}|x)=\mathcal{N}(z_{T};0,I)
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conditional distribution}
+    Our goal is to learn to undo the noise process, and so it is natural to consider the reverse of the conditional distribution $q(z_{t}|z_{t-1})$:
+    \begin{equation*}
+        q(z_{t-1}|z_{t})=\frac{q(z_{t}|z_{t-1})q(z_{t-1})}{q(z_{t})}
+    \end{equation*}
+    But $q(z_{t-1})$ is difficult to calculate:
+    \begin{itemize}
+        \item Evaluation of the integral $\int{}q(z_{t-1}|x)p(x)\mathrm{d}x$ is intractable, because we must integrate over the unknown data density $p(x)$.
+        \item If we approximate the integration using samples from the training data set, we obtain a complicated distribution expressed as a mixture of Gaussians.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conditional distribution}
+    Instead, we consider the conditional version of the reverse distribution, conditioned on the data vector $x$, defined by $q(z_{t-1}|z_{t},x)$:
+    \begin{align*}
+        q(z_{t-1}|z_{t},x)&=\frac{q(z_{t}|z_{t-1},x)q(z_{t-1}|x)}{q(z_{t}|x)}=\frac{q(z_{t}|z_{t-1})q(z_{t-1}|x)}{q(z_{t}|x)} \\
+        &=\mathcal{N}(z_{t-1};m_{t}(x,z_{t}),\sigma^{2}_{t}I) \\
+        m_{t}(x,z_{t})&=\frac{(1-\alpha_{t-1})\sqrt{1-\beta_{t}}z_{t}+\sqrt{\alpha_{t-1}}\beta_{t}x}{1-\alpha_{t}} \\
+        \sigma^{2}_{t}&=\frac{\beta_{t}(1-\alpha_{t-1})}{1-\alpha_{t}}
+    \end{align*}
+\end{frame}
+
+\end{document}
