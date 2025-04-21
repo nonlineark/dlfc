@@ -190,7 +190,7 @@
     \frametitle{Amortized inference}
     A typical choice for the encoder is a Gaussian distribution with a diagonal covariance matrix:
     \begin{equation*}
-        q(z|x;\phi)=\prod_{m=1}^{M}\mathcal{N}(z_{m};\mu_{m}(x,\phi),\sigma^{2}_{m}(x,\phi))
+        q(z|x;\phi)=\prod_{m=1}^{M}\mathcal{N}(z_{m};\mu_{m}(x;\phi),\sigma^{2}_{m}(x;\phi))
     \end{equation*}
 \end{frame}
 
@@ -236,7 +236,7 @@
     \begin{equation*}
         z_{nm}^{(l)}=\mu_{nm}+\sigma_{nm}\epsilon_{nm}^{(l)}
     \end{equation*}
-    where $\mu_{nm}=\mu_{m}(x_{n},\phi)$ and $\sigma_{nm}=\sigma_{m}(x_{n},\phi)$. This makes the dependence on $\phi$ explicit and allows gradients with respect to $\phi$ to be evaluated.
+    where $\mu_{nm}=\mu_{m}(x_{n};\phi)$ and $\sigma_{nm}=\sigma_{m}(x_{n};\phi)$. This makes the dependence on $\phi$ explicit and allows gradients with respect to $\phi$ to be evaluated.
 \end{frame}
 
 \begin{frame}
