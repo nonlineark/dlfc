@@ -436,4 +436,79 @@
     \href{https://arxiv.org/pdf/2011.13456}{Further references}.
 \end{frame}
 
+\section{Guided Diffusion}
+
+\begin{frame}
+    \frametitle{Guided diffusion}
+    In many applications, we want to sample from a conditional distribution $p(x|c)$:
+    \begin{itemize}
+        \item The simplest approach is to treat $c$ as an additional input into the denoising neural network $g(z,c,t;w)$ and then to train the network using matched pairs $\{x_{n},c_{n}\}$.
+        \begin{itemize}
+            \item The main limitation of this approach is that the network can give insufficient weight to, or even ignore, the conditioning variables.
+        \end{itemize}
+        \item We need a way to control how much weight is given to the conditioning information, this additional pressure to match the conditioning information is called guidance.
+        \item There are two main approaches to guidance depending on whether or not a separate classifier model is used.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Classifier guidance}
+    Suppose that a trained classifier $p(c|x)$ is available:
+    \begin{equation*}
+        \nabla_{x}\log{}p(x|c)=\nabla_{x}\log\frac{p(x)p(c|x)}{p(c)}=\nabla_{x}\log{}p(x)+\nabla_{x}\log{}p(c|x)
+    \end{equation*}
+    The influence of the classifier can be controlled by introducing a hyperparameter $\lambda$, called the guidance scale:
+    \begin{equation*}
+        \mathrm{score}(x,c)=\nabla_{x}\log{}p(x)+\lambda\nabla_{x}\log{}p(c|x)
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Classifier guidance}
+    \begin{itemize}
+        \item One problem with the classifier-based approach to guidance is that a separate classifier must be trained.
+        \item Furthermore, this classifier needs to be able to classify examples with varying degrees of noise.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Classifier-free guidance}
+    We can train a single network to model both $p(x|c)$ and $p(x)$, in which the conditioning variable $c$ is set to a null value, for example $c=0$, with some probability during training, typically around $10-20\%$. Then $p(x)$ is represented by $p(x|c=0)$. We can rewrite the score function this way:
+    \begin{align*}
+        \mathrm{score}(x,c)&=\nabla_{x}\log{}p(x)+\lambda\nabla_{x}\log{}p(c|x) \\
+        &=\nabla_{x}\log{}p(x)+\lambda(\nabla_{x}\log{}p(x|c)-\nabla_{x}\log{}p(x)) \\
+        &=\lambda\nabla_{x}\log{}p(x|c)+(1-\lambda)\nabla_{x}\log{}p(x)
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Classifier-free guidance}
+    \begin{figure}
+        \caption{Images generated using the conditioning text ``A stained glass window of a panda eating bamboo''. Examples on the left were generated with $\lambda=0$, whereas examples on the right were generated with $\lambda=3$}
+        \includegraphics[width=0.8\textwidth]{Figure_7.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Classifier-free guidance}
+    \begin{figure}
+        \caption{Image super-resolution can be achieved by denoising a high-resolution sample from a Gaussian using the low-resolution image as a conditioning variable}
+        \includegraphics[height=0.6\textheight]{Figure_8.pdf}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Classifier-free guidance}
+    More ways of generating images:
+    \begin{itemize}
+        \item Image denoising is performed at a lower resolution and the result is subsequently up-sampled using a separate network to give a final high-resolution output.
+        \item Latent diffusion models:
+        \begin{itemize}
+            \item An autoencoder is trained on noise-free images to obtain a lower-dimensional representation of the images.
+            \item A U-net architecture is then trained to perform the denoising within the lower-dimensional space.
+            \item The denoised representation is mapped into the high-resolution image space using the output half of the autoencoder network.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
 \end{document}
